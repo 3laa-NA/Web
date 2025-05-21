@@ -1,25 +1,30 @@
 import { useContext } from 'react';
-import { AppContext } from '../../App';
+import { useTranslation } from 'react-i18next';
+import { AppContext } from '../../contexts/AppContext';
+import { AVAILABLE_LANGUAGES } from '../../utils/i18n';
 
-// Composant pour changer la langue de l'application
-// N'inclut que le français et l'anglais pour l'instant
+/**
+ * Composant pour changer la langue de l'application
+ * Inclut actuellement le français et l'anglais
+ */
 function LanguageSwitcher() {
-  const { language, changeLanguage, t } = useContext(AppContext);
+  const { language, changeLanguage } = useContext(AppContext);
+  const { t, i18n } = useTranslation('common');
   
-  // Liste des langues disponibles dans l'application
-  const languages = [
-    { code: 'fr', name: 'Français' },
-    { code: 'en', name: 'English' }
-  ];
-  
-  return (
+  const handleLanguageChange = (lang) => {
+    // Changer la langue dans i18next
+    i18n.changeLanguage(lang);
+    // Mettre à jour également dans le contexte de l'App
+    changeLanguage(lang);
+  };
+    return (
     <div className="language-switcher">
       <select 
-        value={language} 
-        onChange={(e) => changeLanguage(e.target.value)}
-        aria-label={t('selectLanguage')}
+        value={language || i18n.language} 
+        onChange={(e) => handleLanguageChange(e.target.value)}
+        aria-label={t('selectLanguage', 'Select Language')}
       >
-        {languages.map((lang) => (
+        {AVAILABLE_LANGUAGES.map((lang) => (
           <option key={lang.code} value={lang.code}>
             {lang.name}
           </option>

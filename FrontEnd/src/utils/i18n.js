@@ -1,137 +1,131 @@
-// Simple i18n utility
+/**
+ * Utilitaire i18n
+ * Ce module fournit des fonctions pour le support multilingue dans l'application
+ */
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import Backend from 'i18next-http-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-const translations = {
-  en: {
-    welcome: "Welcome",
-    dashboard: "Dashboard",
-    privateMessages: "Private Messages",
-    profile: "Profile",
-    admin: "Administration",
-    settings: "Settings",
-    messages: "Messages",
-    newMessage: "New message",
-    send: "Send",
-    reply: "Reply",
-    loading: "Loading...",
-    noMessages: "No messages found.",
-    username: "Username",
-    password: "Password",
-    login: "Login",
-    signin: "Sign up",
-    logout: "Log Out",
-    firstName: "First name",
-    lastName: "Last name",
-    email: "Email",
-    bio: "Bio",
-    save: "Save",
-    cancel: "Cancel",
-    confirmPassword: "Confirm password",
-    errorPasswordMismatch: "Error: passwords do not match",
-    errorEmptyFields: "Please enter both username and password",
-    selectLanguage: "Select language",
-    from: "From",
-    to: "To",
-    apply: "Apply",
-    search: "Search messages...",
-    serverError: "Server error. Please try again later.",
-    connectionError: "Could not connect to server. Please check your internet connection.",
-    unexpectedError: "An unexpected error occurred. Please try again.",
-    noAccount: "Don't have an account?",
-    createAccount: "Create one here",
-    menu: "Menu",
-    totalMessages: "Total Messages",
-    todayMessages: "Today's Messages",
-    replies: "Replies",
-    interactions: "Interactions",
-    allTime: "All time",
-    newToday: "New today",
-    totalReplies: "Total replies",
-    likesReplies: "Likes & replies",
-    refresh: "Refresh",
-    noMessages: "No messages found matching your criteria.",
-    like: "Like",
-    share: "Share",
-    whatInMind: "What's on your mind?",
-    addImage: "Add image",
-    addLink: "Add link",
-    addEmoji: "Add emoji",
-    messageEmptyError: "Message cannot be empty",
-    user: "User",
-    submit: "Submit",
-    writeReply: "Write your reply...",
-    replyText: "Reply text",
-    fieldRequired: "This field is required",
-    reset: "Reset"
-  },
-  fr: {
-    welcome: "Bienvenue",
-    dashboard: "Tableau de bord",
-    privateMessages: "Messages privés",
-    profile: "Profil",
-    admin: "Administration",
-    settings: "Paramètres",
-    messages: "Messages",
-    newMessage: "Nouveau message",
-    send: "Envoyer",
-    reply: "Répondre",
-    loading: "Chargement...",
-    noMessages: "Aucun message trouvé.",
-    username: "Nom d'utilisateur",
-    password: "Mot de passe",
-    login: "Connexion",
-    signin: "Inscription",
-    logout: "Déconnexion",
-    firstName: "Prénom",
-    lastName: "Nom",
-    email: "Email",
-    bio: "Bio",
-    save: "Enregistrer",
-    cancel: "Annuler",
-    confirmPassword: "Confirmer le mot de passe",
-    errorPasswordMismatch: "Erreur: les mots de passe ne correspondent pas",
-    errorEmptyFields: "Veuillez saisir le nom d'utilisateur et le mot de passe",
-    selectLanguage: "Choisir la langue",
-    from: "De",
-    to: "À",
-    apply: "Appliquer",
-    search: "Rechercher des messages...",
-    serverError: "Erreur du serveur. Veuillez réessayer plus tard.",
-    connectionError: "Impossible de se connecter au serveur. Vérifiez votre connexion internet.",
-    unexpectedError: "Une erreur inattendue s'est produite. Veuillez réessayer.",
-    noAccount: "Vous n'avez pas de compte ?",
-    createAccount: "Créez-en un ici",
-    menu: "Menu",
-    totalMessages: "Messages totaux",
-    todayMessages: "Messages du jour",
-    replies: "Réponses",
-    interactions: "Interactions",
-    allTime: "Depuis le début",
-    newToday: "Nouveaux aujourd'hui",
-    totalReplies: "Réponses totales",
-    likesReplies: "Likes et réponses",
-    refresh: "Actualiser",
-    noMessages: "Aucun message ne correspond à vos critères.",
-    like: "J'aime",
-    share: "Partager",
-    whatInMind: "Qu'avez-vous en tête ?",
-    addImage: "Ajouter une image",
-    addLink: "Ajouter un lien",
-    addEmoji: "Ajouter un émoji",
-    messageEmptyError: "Le message ne peut pas être vide",
-    user: "Utilisateur",
-    submit: "Envoyer",
-    writeReply: "Écrivez votre réponse...",
-    replyText: "Texte de réponse",
-    fieldRequired: "Ce champ est obligatoire",
-    reset: "Réinitialiser"
+// Initialisation de i18next
+i18n
+  // Backend pour charger les traductions depuis /public/locales
+  .use(Backend)
+  // Détection automatique de la langue de l'utilisateur
+  .use(LanguageDetector)
+  // Passage de l'instance i18n à react-i18next
+  .use(initReactI18next)
+  // Initialisation de i18next
+  .init({
+    // Langue par défaut
+    fallbackLng: 'fr',
+    // Mode debug, désactivé en production
+    debug: process.env.NODE_ENV === 'development',
+    // Espaces de noms à charger
+    ns: ['common', 'auth', 'features'],
+    defaultNS: 'common',
+    // Configuration du backend
+    backend: {
+      // Chemin pour charger les ressources
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+    // Options d'interpolation
+    interpolation: {
+      escapeValue: false, // Pas nécessaire pour React qui échappe par défaut
+    },
+    // Paramètres React
+    react: {
+      useSuspense: true, // Utiliser React Suspense pour le chargement asynchrone
+    },
+  });
+
+// Stockage de la langue courante globalement pour éviter de la passer partout
+let currentLanguage = localStorage.getItem('language') || 'fr';
+
+/**
+ * Définir la langue courante pour l'application
+ * @param {string} language - Code de langue ('fr' ou 'en')
+ */
+function setCurrentLanguage(language) {
+  if (language === 'fr' || language === 'en') {
+    currentLanguage = language;
+    localStorage.setItem('language', language);
+    i18n.changeLanguage(language);
   }
-};
+}
 
-export const getTranslations = (language) => {
-  return translations[language] || translations.fr; // Français par défaut
-};
+/**
+ * Obtenir la langue courante de l'application
+ * @returns {string} Le code de langue courant
+ */
+function getCurrentLanguage() {
+  return i18n.language || currentLanguage;
+}
 
-export const t = (key, language) => {
-  const currentTranslations = translations[language] || translations.fr;
-  return currentTranslations[key] || key;
+/**
+ * Fonction de traduction pour obtenir une chaîne traduite
+ * Compatible avec l'API précédente pour rétrocompatibilité
+ * @param {string} key - Clé de traduction
+ * @param {string} [language] - Code de langue ('fr' ou 'en'), utilise la langue courante si non fourni
+ * @param {object} [options] - Options à passer à i18next
+ * @returns {string} Chaîne traduite ou la clé si la traduction n'existe pas
+ */
+function t(key, language, options = {}) {// Si le second paramètre est un objet, on considère que ce sont les options, pas la langue
+  if (language && typeof language === 'object') {
+    options = language;
+    language = null;
+  }
+
+  // Utiliser la langue spécifique si fournie, sinon utiliser i18next
+  if (language) {
+    const savedLang = i18n.language;
+    i18n.changeLanguage(language);
+    const translation = i18n.t(key, options);
+    i18n.changeLanguage(savedLang);
+    return translation;
+  }
+
+  return i18n.t(key, options);
+}
+
+/**
+ * Pour la rétrocompatibilité - obtenir toutes les traductions pour une langue
+ * @deprecated Utiliser la fonction t() avec des espaces de noms à la place
+ * @param {string} language - Code de langue ('fr' ou 'en')
+ * @returns {Object} Objet contenant les traductions
+ */
+function getTranslations(language = 'fr') {console.warn('getTranslations est déprécié, utiliser la fonction t() avec des espaces de noms à la place');
+  
+  // Charger les ressources de manière synchrone (non recommandé mais nécessaire pour la compatibilité)
+  const resources = {};
+  ['common', 'auth', 'features'].forEach(ns => {
+    try {
+      // Ceci est un repli et ne remplace pas complètement la fonctionnalité
+      // C'est fourni uniquement pour la rétrocompatibilité
+      const translations = i18n.getResourceBundle(language, ns) || {};
+      Object.assign(resources, translations);
+    } catch (error) {
+      console.error(`Échec de chargement des traductions pour ${language}/${ns}`, error);
+    }
+  });
+  
+  return resources;
+}
+
+/**
+ * Langues disponibles
+ */
+const AVAILABLE_LANGUAGES = [
+  { code: 'fr', name: 'Français' },
+  { code: 'en', name: 'English' }
+];
+
+// Exporter directement l'instance i18n et les fonctions pour utilisation dans l'application
+export { 
+  i18n,
+  t,
+  setCurrentLanguage,
+  getCurrentLanguage,
+  AVAILABLE_LANGUAGES,
+  getTranslations
 };

@@ -1,19 +1,27 @@
-import { useState, useContext } from 'react';
-import { AppContext } from '../../App';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { API } from '../../services/api';
 import Reply from './Reply';
 
-// Composant pour afficher un message individuel avec support pour réponses imbriquées
+/**
+ * Composant pour afficher un message individuel avec ses réponses
+ * Note: Seuls les messages principaux peuvent recevoir des réponses (pas de réponses imbriquées)
+ */
 function MessageItem({ message, onPostReply, depth = 0 }) {
-  const { t } = useContext(AppContext);
+  const { t } = useTranslation('features');
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(message.likes && Array.isArray(message.likes) && message.likes.includes(localStorage.getItem('userId')));
+  const [likeCount, setLikeCount] = useState(Array.isArray(message.likes) ? message.likes.length : 0);
+  const [isLiking, setIsLiking] = useState(false);
   
-  // Maximum d'imbrication pour les réponses (pour éviter des imbrications trop profondes visuellement)
-  const MAX_DEPTH = 3;
+  // Maximum d'imbrication pour les réponses (désormais fixé à 1 niveau)
+  const MAX_DEPTH = 1;
   
   // Formatage de la date du message
   const formatDate = (timestamp) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('default', {
       day: 'numeric',
       month: 'short',
@@ -34,9 +42,24 @@ function MessageItem({ message, onPostReply, depth = 0 }) {
   };
 
   // Gestionnaire pour le like
-  const handleLike = () => {
-    setLiked(!liked);
-    // Dans une vraie application, vous enverriez cette action à l'API
+  const handleLike = async () => {
+    if (isLiking) return; // Prevent multiple clicks
+    
+    setIsLiking(true);
+    try {
+      const response = await API.messages.toggleLike(message.id);
+      
+      if (response.success) {
+        setLiked(response.liked);
+        setLikeCount(response.likeCount);
+      } else {
+        console.error('Failed to toggle like:', response.message);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   // Ajout de classes conditionnelles pour l'affichage des réponses
@@ -46,47 +69,45 @@ function MessageItem({ message, onPostReply, depth = 0 }) {
     <li className={messageClasses}>
       <div className="message-header">
         <div className="message-author">
-          <div className="avatar-small">
+          <div className="avatar">
             {message.avatar || message.user.charAt(0)}
           </div>
           <div className="message-author-info">
-            <div className="message-author-name">{message.user}</div>
+            <div className="message-author-name">{message.user || message.login}</div>
           </div>
         </div>
-        <time>{formatDate(message.timestamp)}</time>
+        <time className="message-date">{formatDate(message.timestamp)}</time>
       </div>
       
-      <p className="message-content">{message.text}</p>
+      <div className="message-content">{message.text}</div>
       
       <div className="message-actions">
-        {/* N'afficher le bouton de réponse que si nous n'avons pas atteint la profondeur maximale */}
-        {depth < MAX_DEPTH && (
+        {/* N'afficher le bouton de réponse que pour les messages principaux (non-réponses) */}
+        {depth === 0 && (
           <button 
-            className={`message-action-btn ${showReplyForm ? 'active' : ''}`} 
+            className={`message-action-btn reply-button ${showReplyForm ? 'active' : ''}`} 
             onClick={toggleReplyForm}
           >
-            💬
-            <span>{t('reply')}</span>
+            <span>{t('messages.reply')}</span>
             {message.replies && message.replies.length > 0 && (
-              <span className="count">({message.replies.length})</span>
+              <span className="message-badge">{message.replies.length}</span>
             )}
           </button>
         )}
         
         <button 
-          className={`message-action-btn ${liked ? 'active' : ''}`}
+          className={`message-action-btn like-button ${liked ? 'active' : ''}`}
           onClick={handleLike}
+          disabled={isLiking}
         >
-          {liked ? '❤️' : '🤍'}
-          <span>{t('like')}</span>
-          {(message.likes > 0 || liked) && (
-            <span className="count">({liked ? message.likes + 1 : message.likes})</span>
+          <span>{t('messages.like')}</span>
+          {likeCount > 0 && (
+            <span className="message-badge">{likeCount}</span>
           )}
         </button>
         
-        <button className="message-action-btn">
-          🔄
-          <span>{t('share')}</span>
+        <button className="message-action-btn share-button">
+          <span>{t('messages.share')}</span>
         </button>
       </div>
       

@@ -1,7 +1,8 @@
-import { useContext } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { AppContext } from '../../App';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useContext } from 'react';
+import { AppContext } from '../../contexts/AppContext';
 import UserPanel from '../user/UserPanel';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import ThemeSwitch from '../common/ThemeSwitch';
@@ -11,32 +12,34 @@ import ThemeSwitch from '../common/ThemeSwitch';
  * Affiche les liens de navigation, les réglages et le panel utilisateur
  */
 function NavigationPanel() {
-  const { t } = useContext(AppContext);
+  const { t } = useTranslation('common');
   const { user } = useAuth();
+  const { toggleTheme } = useContext(AppContext);
   
   return (
-    <nav id="navigation_panel" className="navigation-panel">
-      <div className="logo">
-        <Link to="/">Organiz'Asso</Link>
+    <nav className="navbar">
+      <div className="navbar-container">
+        <div className="navbar-brand">
+          <Link to="/">Organiz'Asso</Link>
+        </div>
+        
+        <ul className="navbar-nav">
+          {user && (
+            <>
+              <li><NavLink to="/dashboard" className="nav-link">{t('navigation.dashboard')}</NavLink></li>
+              <li><NavLink to="/messages" className="nav-link">{t('navigation.messages')}</NavLink></li>
+              <li><NavLink to="/profile" className="nav-link">{t('navigation.profile')}</NavLink></li>
+              {user.role === 'admin' && <li><NavLink to="/admin" className="nav-link">{t('navigation.admin')}</NavLink></li>}
+            </>
+          )}
+        </ul>
+        
+        <div className="navbar-tools">
+          <LanguageSwitcher />
+          <ThemeSwitch onChange={toggleTheme} />
+          <UserPanel />
+        </div>
       </div>
-      
-      <div className="nav-links">
-        {user && (
-          <>
-            <NavLink to="/dashboard">{t('dashboard')}</NavLink>
-            <NavLink to="/messages">{t('privateMessages')}</NavLink>
-            <NavLink to="/profile">{t('profile')}</NavLink>
-            {user.role === 'admin' && <NavLink to="/admin">{t('admin')}</NavLink>}
-          </>
-        )}
-      </div>
-      
-      <div className="settings">
-        <LanguageSwitcher />
-        <ThemeSwitch />
-      </div>
-      
-      <UserPanel />
     </nav>
   );
 }

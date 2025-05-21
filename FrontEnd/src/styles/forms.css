@@ -1,0 +1,283 @@
+/* forms.css - Styles pour formulaires et entrées */
+
+/* Conteneur de formulaire */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.dashboard-new-message .form {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.form-title {
+  font-size: var(--font-size-xl);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+/* Groupes de champs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+}
+
+.form-group label {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.form-group:focus-within label {
+  color: var(--primary);
+}
+
+/* Styles pour les rangées dans un formulaire */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Styles pour un groupe de formulaire en grille */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+/* Champs de saisie */
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.form-control::placeholder {
+  color: var(--text-disabled);
+  opacity: 0.7;
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* États des champs */
+.form-control.error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px rgba(239, 71, 111, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:disabled {
+  background-color: rgba(245, 245, 245, 0.6);
+  cursor: not-allowed;
+  opacity: 0.8;
+  border-style: dashed;
+}
+
+/* Message d'erreur */
+.form-error {
+  color: var(--error);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  animation: fadeIn var(--transition-normal);
+}
+
+.form-error::before {
+  content: "⚠️";
+  font-size: 14px;
+}
+
+/* Message de succès */
+.form-success {
+  color: var(--success);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  animation: fadeIn var(--transition-normal);
+}
+
+.form-success::before {
+  content: "✅";
+  font-size: 14px;
+}
+
+/* Toggles et checkboxes */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  padding: var(--spacing-xs) 0;
+  transition: opacity var(--transition-fast);
+}
+
+.form-check:hover {
+  opacity: 0.9;
+}
+
+.form-check input[type="checkbox"],
+.form-check input[type="radio"] {
+  accent-color: var(--primary);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  position: relative;
+  border-radius: var(--radius-sm);
+}
+
+/* Style pour les checkbox personnalisés */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.checkbox input[type="checkbox"] {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  appearance: none;
+  background-color: var(--text-disabled);
+  border-radius: var(--radius-full);
+  transition: var(--transition-normal);
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"]:checked {
+  background-color: var(--primary);
+}
+
+.checkbox input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  background-color: white;
+  transform: translateX(0);
+  transition: var(--transition-normal);
+}
+
+.checkbox input[type="checkbox"]:checked::before {
+  transform: translateX(18px);
+}
+
+/* Sélecteur */
+select.form-control {
+  padding-right: 2.5rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  cursor: pointer;
+}
+
+select.form-control:hover {
+  border-color: var(--primary-light);
+}
+
+/* Actions de formulaire */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+/* Pied de formulaire */
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-lg);
+}
+
+/* Boutons de formulaire */
+.form-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+/* Champs spécifiques */
+.search-input {
+  position: relative;
+  width: 100%;
+}
+
+.search-input input {
+  padding-left: 2.5rem;
+  width: 100%;
+}
+
+.search-input:before {
+  content: "🔍";
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-disabled);
+}

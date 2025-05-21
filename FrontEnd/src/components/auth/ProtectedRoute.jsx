@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Composant pour protéger les routes nécessitant une authentification
@@ -10,10 +11,10 @@ import { useAuth } from '../../contexts/AuthContext';
  */
 function ProtectedRoute({ children, isAdmin = false }) {
   const { user, loading } = useAuth();
-  
-  // Afficher un indicateur de chargement pendant la vérification de la session
+  const { t } = useTranslation('auth');
+    // Afficher un indicateur de chargement pendant la vérification de la session
   if (loading) {
-    return <div className="loading">Vérification de l'authentification...</div>;
+    return <div className="loading">{t('verifyingAuthentication')}</div>;
   }
   
   // Redirection si l'utilisateur n'est pas connecté

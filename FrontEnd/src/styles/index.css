@@ -1,0 +1,17 @@
+/* index.css - Point d'entrée pour tous les styles */
+
+/* Import des différents modules CSS */
+@import './base.css';
+@import './layout.css';
+@import './buttons.css';
+@import './forms.css';
+@import './navigation.css';
+@import './messages.css';
+@import './alerts.css';
+@import './utilities.css';
+@import './themes.css';
+@import './animations.css';
+@import './auth.css';
+@import './user.css';
+
+/* Styles personnalisés supplémentaires spécifiques à l'application */

@@ -1,18 +1,17 @@
-import { useContext } from 'react';
-import { AppContext } from '../../App';
+import { useTranslation } from 'react-i18next';
 import SearchBar from '../common/SearchBar';
 import DateFilters from '../common/DateFilters';
+import ConnectionStatus from '../common/ConnectionStatus';
 
 // En-tête du tableau de bord - simplifié
 function Header({ onSearch, onDateFilter, user }) {
-  const { t } = useContext(AppContext);
-  const userName = user && user.firstName ? user.firstName : t('user');
-  
+  const { t } = useTranslation('common');
+  const userName = user ? (user.login || `${user.firstName || ''} ${user.lastName || ''}`.trim()) : t('defaultUser', { defaultValue: 'utilisateur' });
   return (
     <header className="dashboard-header">
       <div className="logo">
-        <h1>{t('dashboard')}</h1>
-        <p>{t('welcome')}, {userName}!</p>
+        <h1>{t('navigation.dashboard')} <span className="dashboard-badge">📊</span></h1>
+        <p>{t('welcome')}, <span className="username-highlight">{userName}</span>!</p>
       </div>
       
       <div className="search-zone">
@@ -46,6 +45,11 @@ function Header({ onSearch, onDateFilter, user }) {
             onDateFilter({ start: '', end: '' });
           }}>{t('cancel')}</button>
         </div>
+      </div>
+      
+      {/* Indicateur de statut de connexion au backend */}
+      <div className="header-tools">
+        <ConnectionStatus />
       </div>
     </header>
   );

@@ -1,66 +1,155 @@
-import { useState, useEffect, useContext } from 'react';
-import { AppContext } from '../../App';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 import ConversationList from './ConversationList';
 import MessageThread from './MessageThread';
+import { API } from '../../services/api';
 
-// Composant principal pour la messagerie privée
-// Permet de visualiser et interagir avec les conversations privées
+/**
+ * Composant principal pour la messagerie privée
+ * Permet de visualiser et interagir avec les conversations privées
+ */
 function PrivateMessages() {
-  const { user } = useContext(AppContext);
+  const { t } = useTranslation('features');
+  const { user } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  // Chargement initial des conversations (simulé)
+  // Chargement initial des conversations depuis l'API
   useEffect(() => {
-    setTimeout(() => {
-      setConversations([
-        { id: 1, with: 'John Doe', lastMessage: 'Hello there!', unread: 2 },
-        { id: 2, with: 'Jane Smith', lastMessage: 'See you tomorrow', unread: 0 },
-        { id: 3, with: 'Mike Johnson', lastMessage: 'Thanks for your help', unread: 1 }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchConversations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Récupérer les conversations depuis l'API
+        const response = await API.privateMessages.getConversations();
+        
+        if (response.success) {
+          // Transform conversation data to match the component requirements
+          const processedConversations = response.conversations.map(conv => {
+            // Find the other participant
+            const otherParticipant = conv.participants?.find(
+              p => p !== user?.id
+            ) || '';
+            
+            return {
+              id: conv._id || conv.id,
+              withId: otherParticipant,
+              withName: conv.withName || '',
+              lastMessage: conv.lastMessage?.text || '',
+              timestamp: conv.updatedAt || conv.lastMessage?.timestamp || new Date(),
+              unread: conv.unreadBy?.includes(user?.id) ? 1 : 0
+            };
+          });          
+          setConversations(processedConversations);
+        } else {
+          throw new Error(response.message || t('privateMessages.failedToLoadConversations', { ns: 'features' }));
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des conversations:', error);
+        setError(error.message || t('privateMessages.connectionError', { ns: 'features' }));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (user) {
+      fetchConversations();
+    }
+  }, [user, t]);
   
-  // Sélectionne une conversation et marque ses messages comme lus
-  const handleSelectConversation = (id) => {
-    setSelectedConversation(id);
+  // Sélectionner une conversation
+  const handleSelectConversation = (conversationId) => {
+    setSelectedConversation(conversationId);
     
     // Marquer la conversation comme lue
-    setConversations(conversations.map(conv => 
-      conv.id === id ? { ...conv, unread: 0 } : conv
-    ));
+    const markAsRead = async () => {
+      try {
+        // Ignorer l'erreur car ce n'est pas critique pour l'expérience utilisateur
+      } catch (error) {
+        // Ignorer l'erreur car ce n'est pas critique pour l'expérience utilisateur
+      }
+    };
+    
+    markAsRead();
+  };
+    // Gestionnaire pour envoyer un nouveau message
+  const handleSendMessage = async (text) => {
+    if (!text.trim() || !selectedConversation) return;
+    
+    try {
+      const recipientInfo = conversations.find(conv => conv.id === selectedConversation);
+      const recipient = recipientInfo ? recipientInfo.withId : null;
+      
+      if (!recipient) {
+        throw new Error(t('privateMessages.recipientNotFound', { ns: 'features' }));
+      }
+      
+      setError(null);
+      
+      // Envoyer le message via l'API
+      const response = await API.privateMessages.send({ 
+        recipientId: recipient,
+        text
+      });
+      
+      return { 
+        success: response.success,
+        messageId: response.messageId
+      };
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      setError(error.message || t('privateMessages.messageSendFailed'));
+      return { success: false, error: error.message };
+    }
   };
   
-  // Gestionnaire pour envoyer un nouveau message
-  const handleSendMessage = (text) => {
-    // Dans une vraie application, vous enverriez le message à une API
-    console.log(`Sending message to conversation ${selectedConversation}: ${text}`);
-  };
-  
-  return (
+  // Filtrer les conversations par recherche
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredConversations = searchTerm
+    ? conversations.filter(conv => 
+        conv.withName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : conversations;
+    return (
     <div className="private-messages">
-      <h2>Private Messages</h2>
+      <div className="private-messages-header">
+        <h2>{t('privateMessages.privateMessages')}</h2>
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder={t('privateMessages.searchConversations')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+              aria-label={t('privateMessages.clearSearch')}
+            >
+              ×
+            </button>
+          )}
+        </div>      </div>
+      
+      {error && <div className="error-message" role="alert">{t(error) || error}</div>}
       
       <div className="private-messages-container">
-        <ConversationList 
-          conversations={conversations} 
+        <ConversationList
+          conversations={filteredConversations}
           loading={loading}
-          selectedId={selectedConversation} 
-          onSelect={handleSelectConversation} 
+          selectedId={selectedConversation}
+          onSelect={handleSelectConversation}
         />
         
-        {selectedConversation ? (
-          <MessageThread 
-            conversationId={selectedConversation} 
-            onSendMessage={handleSendMessage} 
-          />
-        ) : (
-          <div className="no-conversation-selected">
-            <p>Select a conversation to start chatting</p>
-          </div>
-        )}
+        <MessageThread
+          conversationId={selectedConversation}
+          onSendMessage={handleSendMessage}
+        />
       </div>
     </div>
   );

@@ -1,16 +1,23 @@
 import { useContext } from 'react';
-import { AppContext } from '../../App';
+import { AppContext } from '../../contexts/AppContext';
+import { useTranslation } from 'react-i18next';
 
 // Composant pour basculer entre les thèmes clair et sombre
-// Utilise la fonction toggleTheme du contexte pour changer de thème
-function ThemeSwitch() {
-  const { theme, toggleTheme } = useContext(AppContext);
+function ThemeSwitch({ onChange }) {
+  const { theme } = useContext(AppContext);
+  const { t } = useTranslation('common');
+  
+  const handleToggle = () => {
+    if (onChange) {
+      onChange();
+    }
+  };
   
   return (
     <button 
-      className="theme-switch" 
-      onClick={toggleTheme} 
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+      className="theme-toggle" 
+      onClick={handleToggle} 
+      aria-label={t('switchTheme', { theme: theme === 'light' ? t('darkTheme') : t('lightTheme'), defaultValue: `Passer au thème ${theme === 'light' ? 'sombre' : 'clair'}` })}
     >
       {theme === 'light' ? '🌙' : '☀️'}
     </button>

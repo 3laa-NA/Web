@@ -1,0 +1,23 @@
+{
+  "adminPanel": "Admin Panel",
+  "pendingApprovals": "Pending Approvals",
+  "noPendingApprovals": "No pending approvals",
+  "userManagement": "User Management",
+  "login": "Login",
+  "name": "Name",
+  "role": "Role",
+  "actions": "Actions",
+  "approve": "Approve",
+  "reject": "Reject",
+  "roleUser": "User",
+  "roleModerator": "Moderator",
+  "roleAdmin": "Administrator",
+  "loadingAdminPanel": "Loading admin panel...",
+  "refresh": "Refresh",
+  "failedToLoadUsers": "Failed to load users",
+  "failedToLoadPendingUsers": "Failed to load pending users",
+  "unexpectedError": "An unexpected error occurred",
+  "approvalFailed": "Approval failed",
+  "rejectionFailed": "Rejection failed",
+  "roleChangeFailed": "Role change failed"
+}

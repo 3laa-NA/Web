@@ -1,12 +1,12 @@
-import { useState, useContext } from 'react';
-import { AppContext } from '../../App';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Composant pour le bouton de déconnexion
  */
 function Logout() {
-  const { t } = useContext(AppContext);
+  const { t } = useTranslation('common');
   const { logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -14,16 +14,14 @@ function Logout() {
     setIsLoading(true);
     await logout();
     setIsLoading(false);
-  };
-  
-  return (
+  };    return (
     <button 
       className="logout-button" 
       onClick={handleLogout}
       disabled={isLoading}
-      aria-label={t('logout')}
+      aria-label={t('navigation.logout')}
     >
-      {isLoading ? t('loading') : t('logout')}
+      {isLoading ? t('loading') : t('navigation.logout')}
     </button>
   );
 }

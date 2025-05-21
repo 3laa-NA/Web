@@ -1,0 +1,144 @@
+/* themes.css - Variantes de thèmes */
+
+/* Classes primaires pour le thème */
+.app {
+  background-color: var(--background);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Thème clair (par défaut) */
+:root[data-theme="light"],
+:root:not([data-theme]) {
+  --primary: #5065DB;
+  --primary-light: #7B8CF0;
+  --primary-dark: #3A4CB1;
+  --secondary: #FF9F5A;
+  --accent: #5BE9B9;
+  
+  --success: #36CB89;
+  --warning: #FFCB47;
+  --error: #FF6060;
+  --info: #52B4FF;
+  
+  --background: #F8F9FC;
+  --surface: #FFFFFF;
+  --border: #E0E2EE;
+  --text-primary: #202842;
+  --text-secondary: #626980;
+  --text-disabled: #A0A5B9;
+}
+
+/* Thème sombre */
+:root[data-theme="dark"] {
+  --primary: #7B8CF0;
+  --primary-light: #9EABFF;
+  --primary-dark: #4150B5;
+  --secondary: #FF9F5A;
+  --accent: #4ED8A9;
+  
+  --success: #34B87D;
+  --warning: #F0BD45;
+  --error: #F05555;
+  --info: #4AA5E7;
+  
+  --background: #151826;
+  --surface: #1E2235;
+  --border: #2C324D;
+  --text-primary: #E6EAFF;
+  --text-secondary: #A8AFD3;
+  --text-disabled: #596080;
+}
+
+/* Ajustements spécifiques au thème sombre */
+:root[data-theme="dark"] .card {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .message-reply {
+  background-color: rgba(40, 44, 65, 0.7);
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .message-reply:hover {
+  background-color: rgba(48, 54, 80, 0.8);
+}
+
+:root[data-theme="dark"] .btn-outline {
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="dark"] .form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(123, 140, 240, 0.25);
+}
+
+:root[data-theme="dark"] .form-control:disabled {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Thème à contraste élevé */
+:root[data-theme="high-contrast"] {
+  --primary: #0066FF;
+  --primary-light: #4D94FF;
+  --primary-dark: #0044AA;
+  --secondary: #FF6600;
+  --accent: #00CC99;
+  
+  --success: #00CC00;
+  --warning: #FFCC00;
+  --error: #FF0000;
+  --info: #0099FF;
+  
+  --background: #FFFFFF;
+  --surface: #F0F0F0;
+  --border: #000000;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-disabled: #666666;
+  
+  --shadow-sm: 0 0 0 1px #000000;
+  --shadow-md: 0 0 0 2px #000000;
+  --shadow-lg: 0 0 0 3px #000000;
+}
+
+/* Transitions pour le changement de thème */
+.theme-transition * {
+  transition: background-color 0.5s, color 0.5s, border-color 0.5s, box-shadow 0.5s;
+}
+
+/* Bouton de basculement de thème */
+.theme-toggle {
+  background: rgba(67, 97, 238, 0.1);
+  border: 2px solid rgba(67, 97, 238, 0.2);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  font-size: 1.25rem;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  background-color: rgba(67, 97, 238, 0.2);
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+  transform: translateY(-2px);
+}

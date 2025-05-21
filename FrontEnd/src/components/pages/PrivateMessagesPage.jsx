@@ -1,15 +1,16 @@
-import { useContext } from 'react';
-import { AppContext } from '../../App';
+import { useTranslation } from 'react-i18next';
 import PrivateMessages from '../private-messages/PrivateMessages';
 
-// Page qui encapsule le composant PrivateMessages
-// Ajoute un titre traduit à la section des messages privés
+/**
+ * Page qui encapsule le composant PrivateMessages
+ * Ajoute un titre traduit à la section des messages privés
+ */
 function PrivateMessagesPage() {
-  const { t } = useContext(AppContext);
+  const { t } = useTranslation('common');
   
   return (
     <div className="page-container">
-      <h1>{t('privateMessages')}</h1>
+      <h1>{t('navigation.privateMessages')}</h1>
       <PrivateMessages />
     </div>
   );

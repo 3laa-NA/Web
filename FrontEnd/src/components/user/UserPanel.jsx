@@ -1,6 +1,5 @@
-import { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AppContext } from '../../App';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import Logout from '../auth/Logout';
 import ProfilePreview from './ProfilePreview';
@@ -11,26 +10,21 @@ import ProfilePreview from './ProfilePreview';
  * soit des liens d'authentification (si non connecté)
  */
 function UserPanel() {
-  const { t } = useContext(AppContext);
+  const { t } = useTranslation('common');
   const { user } = useAuth();
-  
-  // Vérifier si l'utilisateur est le compte développeur spécial
+    // Vérifier si l'utilisateur est le compte développeur spécial
   const isDevAccount = user && user.login === "lmao";
   
   return (
     <div className="user-panel">
       {user ? (
         <>
-          <ProfilePreview user={user} />
-          {isDevAccount && (
-            <div className="dev-mode-indicator" title="Mode développement">🛠️</div>
-          )}
+          <ProfilePreview user={user} />          
           <Logout />
         </>
-      ) : (
-        <div className="auth-links">
-          <Link to="/login" className="login-link">{t('login')}</Link>
-          <Link to="/signin" className="signup-link">{t('signin')}</Link>
+      ) :(
+        <div className="auth-links">          <Link to="/login" className="login-link">{t('navigation.login')}</Link>
+          <Link to="/register" className="signup-link">{t('navigation.register')}</Link>
         </div>
       )}
     </div>

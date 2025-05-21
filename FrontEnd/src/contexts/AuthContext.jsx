@@ -1,123 +1,158 @@
-import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { createContext, useState, useEffect, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import { API } from '../services/api';
 
-const AuthContext = createContext();
+// Contexte pour gérer l'état d'authentification
+export const AuthContext = createContext();
 
-// Identifiants secrets pour le développement
-const DEV_CREDENTIALS = {
-  login: "lmao",
-  password: "lmao",
-};
-
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
+  const { t } = useTranslation(['auth', 'common']);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   
-  // Vérifier si l'utilisateur a une session active au chargement
+  // Vérification du token lors du chargement initial
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const checkAuth = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/user/check-session', {
-          withCredentials: true
-        });
+        setLoading(true);
         
-        if (response.data.success && response.data.user) {
-          setUser(response.data.user);
+        // Vérifier si l'utilisateur est connecté via l'API
+        const response = await API.auth.check();
+        
+        if (response.success && response.user) {
+          setUser(response.user);
+        } else {
+          setUser(null);
         }
-        setError(null); // Réinitialiser les erreurs en cas de succès
       } catch (error) {
-        console.error('Erreur lors de la vérification de session:', error);
-        // Ne pas afficher d'erreur visible à l'utilisateur pour une vérification de session
+        console.error('Erreur de vérification d\'authentification:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
     
-    checkAuthStatus();
+    checkAuth();
   }, []);
   
-  // Fonction pour connecter un utilisateur
+  // Fonction de connexion
   const login = async (credentials) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Vérifier les identifiants de développement secrets
-      if (credentials.login === DEV_CREDENTIALS.login && 
-          credentials.password === DEV_CREDENTIALS.password) {
-        
-        // Créer un utilisateur fictif avec des droits d'administrateur
-        const devUser = {
-          login: "lmao",
-          firstName: "Dev",
-          lastName: "Mode",
-          role: "admin",
-          id: "dev-0001"
-        };
-        
-        setUser(devUser);
-        console.log("🔑 Connexion en mode développement");
-        return { success: true };
-      }
-      
-      // Connexion normale via API
-      const response = await axios.post('http://localhost:8000/api/user/login', credentials, {
-        withCredentials: true
-      });
-      
-      if (response.data.success) {
-        setUser(response.data.user);
-        return { success: true };
-      }
-      
-      return { success: false, message: response.data.message };
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Erreur de connexion';
-      setError(errorMessage);
-      return { success: false, message: errorMessage };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fonction pour déconnecter l'utilisateur
-  const logout = async () => {
-    setLoading(true);
-    try {
-      // Si c'est l'utilisateur de développement, déconnecter directement
-      if (user && user.login === DEV_CREDENTIALS.login) {
-        setUser(null);
-        return true;
-      }
-      
-      // Déconnexion normale via API
-      await axios.get('http://localhost:8000/api/user/logout', {
-        withCredentials: true
-      });
+    // Appel du service d'authentification
+    const response = await API.auth.login(credentials);
+    if (response.success && response.user) {
+      setUser(response.user);
+    } else {
       setUser(null);
-      return true;
+    }
+    // Retourner toute la réponse (success, error, errorCode, user)
+    return response;
+  };
+  
+  // Fonction de déconnexion
+  const logout = async () => {
+    try {
+      await API.auth.logout();
+      setUser(null);
+      return { success: true };
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      return false;
-    } finally {
-      setLoading(false);
+      console.error('Erreur de déconnexion:', error);
+      return {
+        success: false,
+        message: error.message || 'Une erreur est survenue lors de la déconnexion'
+      };
     }
   };
-
-  // Effacer une erreur spécifique
-  const clearError = () => {
-    setError(null);
+  
+  // Fonction d'inscription
+  const register = async (userData) => {
+    try {
+      const response = await API.auth.register(userData);
+        if (response.success) {
+        return { success: true };
+      } else {
+        throw new Error(response.message || t('errors.registrationFailed', { ns: 'auth' }));
+      }
+    } catch (error) {
+      console.error('Erreur d\'inscription:', error);
+      return {
+        success: false,
+        message: error.message || t('errors.errorOccurred', { ns: 'auth' })
+      };
+    }
   };
-
+    // Récupération du profil utilisateur  
+  const getProfile = async () => {
+    try {
+      if (!user) {
+        throw new Error(t('errors.notAuthenticated', { ns: 'auth', defaultValue: 'Utilisateur non authentifié' }));
+      }
+      
+      const response = await API.auth.getProfile();
+      
+      if (response.success && response.profile) {
+        setUser(prevUser => ({
+          ...prevUser,
+          ...response.profile
+        }));
+        return { success: true, profile: response.profile };
+      } else {
+        throw new Error(response.message || 'Échec de récupération du profil');
+      }
+    } catch (error) {
+      console.error('Erreur de récupération du profil:', error);
+      return {
+        success: false,
+        message: error.message || 'Une erreur est survenue lors de la récupération du profil'
+      };
+    }
+  };
+  
+  // Mise à jour du profil utilisateur
+  const updateProfile = async (profileData) => {
+    try {
+      if (!user) {
+        throw new Error('Utilisateur non authentifié');
+      }
+      
+      const response = await API.auth.updateProfile(profileData);
+      
+      if (response.success) {
+        // Mettre à jour les données utilisateur localement
+        setUser(prevUser => ({
+          ...prevUser,
+          ...profileData
+        }));
+        return { success: true };
+      } else {
+        throw new Error(response.message || 'Échec de mise à jour du profil');
+      }
+    } catch (error) {
+      console.error('Erreur de mise à jour du profil:', error);
+      return {
+        success: false,
+        message: error.message || 'Une erreur est survenue lors de la mise à jour du profil'
+      };
+    }
+  };
+  
+  // Valeur partagée avec le contexte
+  const value = {
+    user,
+    loading,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    register,
+    getProfile,
+    updateProfile
+  };
+  
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, error, clearError }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-// Hook personnalisé pour utiliser facilement le contexte d'authentification
-export function useAuth() {
-  return useContext(AuthContext);
-}
+// Hook personnalisé pour utiliser le contexte d'authentification
+export const useAuth = () => useContext(AuthContext);

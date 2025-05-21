@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 // Composant de gestion d'erreurs pour toute l'application
 // Capture les erreurs dans les composants enfants et affiche une UI de repli
@@ -28,26 +29,26 @@ class ErrorBoundary extends Component {
   }
 
   render() {
+    const { t } = this.props;
+    
     // Si une erreur a été détectée, affiche l'interface de secours
     if (this.state.hasError) {
       return (
         <div className="error-boundary">
-          <h2>Something went wrong.</h2>
-          <p>The application encountered an unexpected error. Please try refreshing the page.</p>
+          <h2>{t('errorBoundary.title')}</h2>
+          <p>{t('errorBoundary.message')}</p>
           <details>
-            <summary>Error Details</summary>
+            <summary>{t('errorBoundary.errorDetails')}</summary>
             <p>{this.state.error && this.state.error.toString()}</p>
-            <p>Component Stack:</p>
+            <p>{t('errorBoundary.componentStack')}</p>
             <pre>{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
           </details>
-          <button onClick={() => window.location.reload()}>Refresh Page</button>
+          <button onClick={() => window.location.reload()}>{t('refreshPage')}</button>
         </div>
       );
-    }
-
-    // Si tout va bien, rendre les enfants normalement
+    }    // Si tout va bien, rendre les enfants normalement
     return this.props.children;
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation('common')(ErrorBoundary);

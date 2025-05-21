@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// Composant de filtre par date pour les messages
+// Composant pour filtrer par date
 // Permet de sélectionner une plage de dates et de filtrer les messages en conséquence
 function DateFilters({ onDateFilter }) {
+  const { t } = useTranslation('common');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -21,7 +23,7 @@ function DateFilters({ onDateFilter }) {
   return (
     <div className="date-filters">
       <div className="date-input">
-        <label htmlFor="start-date">From:</label>
+        <label htmlFor="start-date">{t('from')}:</label>
         <input
           id="start-date"
           type="date"
@@ -31,7 +33,7 @@ function DateFilters({ onDateFilter }) {
       </div>
       
       <div className="date-input">
-        <label htmlFor="end-date">To:</label>
+        <label htmlFor="end-date">{t('to')}:</label>
         <input
           id="end-date"
           type="date"
@@ -40,8 +42,8 @@ function DateFilters({ onDateFilter }) {
         />
       </div>
       
-      <button onClick={handleApplyFilter}>Apply</button>
-      <button onClick={handleResetFilter}>Reset</button>
+      <button onClick={handleApplyFilter}>{t('apply')}</button>
+      <button onClick={handleResetFilter}>{t('reset', { defaultValue: 'Réinitialiser' })}</button>
     </div>
   );
 }

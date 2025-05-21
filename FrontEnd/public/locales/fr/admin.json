@@ -1,0 +1,23 @@
+{
+  "adminPanel": "Panneau d'administration",
+  "pendingApprovals": "Approbations en attente",
+  "noPendingApprovals": "Aucune approbation en attente",
+  "userManagement": "Gestion des utilisateurs",
+  "login": "Identifiant",
+  "name": "Nom",
+  "role": "Rôle",
+  "actions": "Actions",
+  "approve": "Approuver",
+  "reject": "Rejeter",
+  "roleUser": "Utilisateur",
+  "roleModerator": "Modérateur",
+  "roleAdmin": "Administrateur",
+  "loadingAdminPanel": "Chargement du panneau d'administration...",
+  "refresh": "Actualiser",
+  "failedToLoadUsers": "Échec du chargement des utilisateurs",
+  "failedToLoadPendingUsers": "Échec du chargement des utilisateurs en attente",
+  "unexpectedError": "Une erreur inattendue s'est produite",
+  "approvalFailed": "L'approbation a échoué",
+  "rejectionFailed": "Le rejet a échoué",
+  "roleChangeFailed": "La modification du rôle a échoué"
+}

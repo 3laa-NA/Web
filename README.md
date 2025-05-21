@@ -1,36 +1,21 @@
-# Web Application with React and React Router
+# Organiz'Asso - Application Web
 
-This project is a React application that uses React Router for navigation.
+Application web pour la gestion des associations, permettant le partage de messages entre les membres et la communication privée.
 
-## Setup Instructions
+## Prérequis
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+- Node.js v16+ et npm
+- MongoDB v4.4+
+- Un éditeur de code (VS Code recommandé)
 
-2. Start the development server:
-   ```
-   npm run dev
-   ```
+## Installation et démarrage
 
-3. Build for production:
-   ```
-   npm run build
-   ```
+Consultez [INSTALLATION.md](./INSTALLATION.md) pour les instructions détaillées d'installation et de configuration.
 
-## Project Structure
+## Documentation i18n
 
-- `/FrontEnd` - Contains the React application
-  - `/src` - Source code
-    - `/components` - React components
-    - `/styles` - CSS styles
-    - `/utils` - Utility functions
+Consultez [README-i18n.md](./FrontEnd/README-i18n.md) pour le guide d'implémentation du système de traduction en français.
 
-## Features
+## Licence
 
-- User authentication
-- Protected routes
-- Multilingual support
-- Theme switching
-- Private messaging
+Ce projet est sous licence MIT.

@@ -1,81 +1,172 @@
-import { useState, useEffect, useContext } from 'react';
-import { AppContext } from '../../App';
+import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
+import { API } from '../../services/api';
 
-// Fil de messages d'une conversation privée
-// Affiche les messages échangés entre deux utilisateurs
+/**
+ * Fil de messages d'une conversation privée
+ * Affiche les messages échangés entre deux utilisateurs
+ */
 function MessageThread({ conversationId, onSendMessage }) {
-  const { user } = useContext(AppContext);
+  const { t } = useTranslation('features');
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newMessage, setNewMessage] = useState('');
+  const messageEndRef = useRef(null);
   
-  // Chargement des messages de la conversation (simulé)
+  // Chargement des messages de la conversation depuis l'API
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setMessages([
-        { id: 1, senderId: 'otherUser', text: 'Hi there!', timestamp: '2024-04-01T10:30:00' },
-        { id: 2, senderId: user.login, text: 'Hello, how are you?', timestamp: '2024-04-01T10:31:00' },
-        { id: 3, senderId: 'otherUser', text: 'I\'m doing well, thanks for asking', timestamp: '2024-04-01T10:33:00' }
-      ]);
-      setLoading(false);
-    }, 800);
-  }, [conversationId, user.login]);
+    const fetchMessages = async () => {
+      if (!conversationId) {
+        setMessages([]);
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Récupérer les messages depuis l'API
+        const response = await API.privateMessages.getMessages(conversationId);
+        
+        if (response.success) {
+          // Process messages to ensure they have the right format
+          const formattedMessages = response.messages.map(msg => ({
+            id: msg._id || msg.id,
+            senderId: msg.senderId,
+            text: msg.text,
+            timestamp: msg.timestamp || new Date(),
+            read: msg.read || false
+          }));          
+          setMessages(formattedMessages);
+        } else {
+          throw new Error(response.message || t('privateMessages.failedToLoadMessages', { ns: 'features' }));
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des messages:', error);
+        setError(error.message || t('privateMessages.connectionError', { ns: 'features' }));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMessages();
+  }, [conversationId, t]);
+  
+  // Scroll automatique vers le dernier message
+  useEffect(() => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
   
   // Gestionnaire pour l'envoi d'un nouveau message
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
     
-    // Ajout du nouveau message au fil de conversation
-    const messageData = {
-      id: Date.now(),
-      senderId: user.login,
-      text: newMessage,
-      timestamp: new Date().toISOString()
-    };
-    
-    setMessages([...messages, messageData]);
-    onSendMessage(newMessage);
-    setNewMessage('');
-  };
-  
-  // Formatage de l'heure des messages
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-  
-  // Affichage d'un indicateur de chargement si nécessaire
-  if (loading) {
-    return <div className="loading">Loading messages...</div>;
-  }
-  
-  return (
-    <div className="message-thread">
-      {/* Affichage des messages */}
-      <div className="thread-messages">
-        {messages.map(message => (
-          <div 
-            key={message.id} 
-            className={`thread-message ${message.senderId === user.login ? 'sent' : 'received'}`}
-          >
-            <div className="message-content">{message.text}</div>
-            <div className="message-time">{formatTime(message.timestamp)}</div>
-          </div>
-        ))}
-      </div>
+    try {
+      // Ajouter immédiatement le message à l'interface pour une meilleure UX
+      const tempMessageData = {
+        id: `temp-${Date.now()}`, // ID temporaire qui sera remplacé par l'ID réel
+        senderId: user?.id,
+        text: newMessage,
+        timestamp: new Date().toISOString(),
+        isPending: true // Indicateur pour montrer que le message est en cours d'envoi
+      };
       
-      {/* Formulaire pour envoyer un nouveau message */}
-      <form className="thread-input" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button type="submit">Send</button>
-      </form>
+      setMessages(prevMessages => [...prevMessages, tempMessageData]);
+      
+      // Envoi du message à l'API via le handler parent
+      const result = await onSendMessage(newMessage);
+      
+      if (result && result.success) {
+        // Remplacer le message temporaire par celui confirmé par le serveur
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === tempMessageData.id 
+              ? { ...tempMessageData, id: result.messageId, isPending: false } 
+              : msg
+          )
+        );
+        
+        // Vider le champ de saisie
+        setNewMessage('');
+      } else {
+        // En cas d'erreur, marquer le message comme échoué
+        setMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === tempMessageData.id 
+              ? { ...tempMessageData, error: true, isPending: false } 
+              : msg
+          )
+        );
+        
+        throw new Error(result?.error || t('privateMessages.messageSendFailed', { ns: 'features' }));
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      setError(error.message || t('privateMessages.messageSendFailed', { ns: 'features' }));
+    }
+  };
+  
+  // Formatage de la date pour l'affichage
+  const formatMessageDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat('default', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+    return (
+    <div className="message-thread">
+      {!conversationId ? (
+        <div className="no-conversation-selected">
+          <p>{t('privateMessages.selectConversation')}</p>
+        </div>
+      ) : (
+        <>
+          <div className="thread-messages">
+            {loading ? (
+              <div className="loading-messages">{t('privateMessages.loading')}</div>
+            ) : error ? (
+              <div className="thread-error">{error}</div>
+            ) : messages.length === 0 ? (
+              <div className="no-messages">{t('privateMessages.noMessages')}</div>
+            ) : (
+              messages.map((message) => (
+                <div 
+                  key={message.id}
+                  className={`thread-message ${message.senderId === user?.id ? 'sent' : 'received'} ${message.isPending ? 'pending' : ''} ${message.error ? 'error' : ''}`}
+                >
+                  <div className="message-text">{message.text}</div>                  <div className="message-time">
+                    {formatMessageDate(message.timestamp)}
+                    {message.isPending && <span className="pending-indicator" title={t('privateMessages.sending')}> ⌛</span>}
+                    {message.error && <span className="error-indicator" title={t('privateMessages.sendError')}> ⚠️</span>}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={messageEndRef} />
+          </div>
+          
+          <form className="thread-input" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder={t('privateMessages.typeMessage')}
+              disabled={loading}
+            />
+            <button type="submit" disabled={loading || !newMessage.trim()}>
+              {t('privateMessages.send')}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 }

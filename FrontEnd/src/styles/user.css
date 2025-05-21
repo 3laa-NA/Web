@@ -1,0 +1,180 @@
+/* user.css - Styles pour les composants liés à l'utilisateur */
+
+/* Panneau utilisateur */
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Prévisualisation du profil */
+.profile-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.profile-preview .avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background-color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+  border: 2px solid var(--primary);
+}
+
+.profile-preview .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  color: white;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.user-info {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.user-name {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.view-profile-link {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.view-profile-link:hover {
+  text-decoration: underline;
+}
+
+/* Liens d'authentification */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Bouton de déconnexion */
+.logout-button {
+  background: rgba(255, 96, 96, 0.1);
+  border: 2px solid rgba(255, 96, 96, 0.2);
+  color: var(--error);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.logout-button:hover {
+  background: rgba(255, 96, 96, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px rgba(255, 96, 96, 0.1);
+}
+
+.logout-button::before {
+  content: "🚪";
+  font-size: 0.9rem;
+}
+
+.login-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.login-link:hover {
+  color: var(--primary);
+  background-color: rgba(67, 97, 238, 0.08);
+}
+
+.signup-link {
+  background-color: var(--primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.signup-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Indicateur mode développeur */
+.dev-mode-indicator {
+  background-color: rgba(255, 152, 0, 0.2);
+  color: #ff9800;
+  font-size: var(--font-size-md);
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  cursor: help;
+}
+
+/* Sélecteur de langue */
+.language-switcher {
+  position: relative;
+}
+
+.language-switcher select {
+  appearance: none;
+  background: rgba(67, 97, 238, 0.1);
+  border: 2px solid rgba(67, 97, 238, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  font-weight: 500;
+  padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+
+.language-switcher::after {
+  content: '🌐';
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.language-switcher select:hover,
+.language-switcher select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+  outline: none;
+}
