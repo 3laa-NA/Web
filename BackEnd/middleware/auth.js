@@ -59,9 +59,10 @@ const authenticate = async (req, res, next) => {
           code: 'INACTIVE_ACCOUNT'
         });
       }
-      
-      // Stocker les informations utilisateur dans la requête
+        // Stocker les informations utilisateur dans la requête
       req.user = user;
+      // Ajouter l'ID sous format string pour être cohérent
+      req.user.id = user._id.toString();
       req.token = token;
       req.tokenPayload = decoded;
       

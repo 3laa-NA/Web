@@ -1,9 +1,11 @@
-{  "messages": {
+{  
+    "messages": {
     "newMessage": "Nouveau message",
     "reply": "Répondre",
-    "replyTo": "Réponse à",
-    "like": "J'aime",
+    "replyTo": "Réponse à",    "like": "J'aime",
+    "unlike": "Je n'aime plus",
     "share": "Partager",
+    "copied": "Copié !",
     "writeSomething": "Écrivez quelque chose...",
     "writeReply": "Écrivez votre réponse...",
     "replyText": "Texte de la réponse",
@@ -20,9 +22,19 @@
     "unexpectedError": "Une erreur inattendue s'est produite",
     "connectionError": "Erreur de connexion",
     "loading": "Chargement des messages...",
+    "newPost": "Nouveau message",
+    "unknownUser": "Utilisateur inconnu",
     "error": {
-      "empty": "Le message ne peut pas être vide"
-    }
+      "empty": "Le message ne peut pas être vide",
+      "failed": "Échec de l'envoi du message",
+      "loading": "Erreur lors du chargement des messages",
+      "unexpected": "Une erreur inattendue est survenue",
+      "unauthorized": "Accès non autorisé à ce forum",      
+      "invalidForum": "Sélectionnez le forum dans lequel publier!",
+      "selectForum": "Choisissez un forum dans la barre latérale pour commencer à participer aux discussions."
+    },
+    "posting": "Envoi...",
+    "welcome": "Bienvenue sur Organiz'Asso!"
   },
   "profile": {
     "updateProfile": "Mettre à jour le profil",
@@ -43,7 +55,11 @@
     "failedToLoadMessages": "Échec du chargement des messages",
     "connectionError": "Erreur de connexion",
     "profileUpdateFailed": "Échec de la mise à jour du profil",
-    "avatarAlt": "Avatar de {{name}}"
+    "avatarAlt": "Avatar de {{name}}",
+    "adminBadge": "Administrateur",    "memberSince": "Membre depuis {{date}}",
+    "publicMessages": "Messages publics",
+    "noBio": "Aucune biographie définie",
+    "publicProfile": "Profil public"
   },
   
   "admin": {
@@ -54,11 +70,12 @@
     "roleUser": "Utilisateur",
     "roleModerator": "Modérateur",
     "roleAdmin": "Administrateur"
-  },
-  "privateMessages": {
+  },  "privateMessages": {
     "privateMessages": "Messages privés",
-    "searchConversations": "Rechercher des conversations...",
+    "inbox": "Boîte de réception",
+    "myConversations": "Mes conversations",    "searchConversations": "Rechercher des conversations...",
     "clearSearch": "Effacer la recherche",
+    "conversation": "Conversation",
     "selectConversation": "Sélectionnez une conversation pour commencer à échanger",
     "failedToLoadConversations": "Échec du chargement des conversations",
     "connectionError": "Erreur de connexion",
@@ -70,6 +87,43 @@
     "loading": "Chargement des messages...",
     "failedToLoadMessages": "Échec du chargement des messages",
     "sending": "Envoi du message en cours...",
-    "sendError": "Erreur d'envoi du message"
+    "sendError": "Erreur d'envoi du message",
+    "contacts": "Contacts",
+    "searchUserPlaceholder": "Nom, prénom ou login",
+    "newConversation": "Nouvelle conversation",
+    "searchUser": "Rechercher un utilisateur",
+    "cancel": "Annuler",
+    "new": "Nouveau",
+    "writeMessage": "Écrire un message",
+    "searching": "Recherche...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "emptyMessage": "Veuillez saisir un message",
+    "startConversationError": "Erreur lors de la création de la conversation"
+  },
+  "navigation": {
+    "forums": "Forums",
+    "messages": "Messages",
+    "profile": "Profil"
+  },
+  "forums": {
+    "public": "Forum Public",
+    "private": "Forum Admin",
+    "create": {
+      "button": "Nouveau forum",
+      "hint": "Créer un nouveau forum",
+      "title": "Créer un nouveau forum",
+      "name": "Nom du forum",
+      "namePlaceholder": "Entrez le nom du forum",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez le but de ce forum",
+      "isPublic": "Forum public",
+      "submit": "Créer"
+    },
+    "errors": {
+      "invalid": "Forum invalide",
+      "notFound": "Forum introuvable",
+      "unauthorized": "Accès non autorisé"
+    },
+    "selectForum": "Veuillez sélectionner un forum"
   }
 }

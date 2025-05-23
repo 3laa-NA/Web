@@ -56,41 +56,38 @@ function Register() {
 
     return errors;
   };
-
   // Initialize form with useForm hook
   const { values, errors, handleChange, handleSubmit } = useForm(
     {
       login: '',
-      email: '',
+      email: '', // Bien que non utilisé par l'API, gardé pour la validation côté client
       password: '',
       confirmPassword: '',
       firstName: '',
       lastName: '',
       bio: '',
-      role: 'member' // Default role
+      role: 'user' // Changé pour correspondre au rôle par défaut dans le backend
     },
     validateForm,
     submitForm
-  );
-
-  // Handle form submission
+  );  // Handle form submission
   async function submitForm() {
     setIsSubmitting(true);
     setError('');
     
     try {
-      // Remove confirmPassword as it's not needed for API
-      const registrationData = { ...values };
-      delete registrationData.confirmPassword;
+      // Préparation des données pour l'API
+      const registrationData = { 
+        ...values,
+        password2: values.confirmPassword // Ajout explicite pour le backend
+      };
       
       const response = await API.auth.register(registrationData);
       
       if (response.success) {
         setSuccess(true);
-        // Redirect after showing success message
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
+        // Pas de redirection automatique car l'utilisateur doit attendre l'approbation
+        // L'utilisateur lira le message expliquant qu'il doit attendre l'approbation d'un administrateur
       } else {
         setError(response.error || t('errors.registrationFailed', { ns: 'auth', defaultValue: 'Registration failed' }));
       }
@@ -98,26 +95,26 @@ function Register() {
       setError(err.message || t('errors.registrationFailed', { ns: 'auth', defaultValue: 'Registration failed' }));
     } finally {
       setIsSubmitting(false);
-    }
-  }  if (success) {
+    }  }  
+    if (success) {
     return (
       <div className="auth-form success-message">
         <h2>{t('success.registrationSuccess', { ns: 'auth', defaultValue: 'Registration Successful' })}</h2>
-        <p>{t('success.registrationSuccessMessage', { ns: 'auth', defaultValue: 'Your account was created successfully. You can now login with your credentials.' })}</p>
+        <p>{t('success.registrationPendingMessage', { ns: 'auth', defaultValue: 'Your account was created successfully. An administrator will review your request and approve your account. You will be able to login once approved.' })}</p>
         <div className="auth-actions">
           <Link to="/login" className="btn btn-primary">{t('navigation.login', { ns: 'common' })}</Link>
-        </div>
-      </div>
+        </div>      </div>
     );
-  }return (
+  }
+  
+  return (
     <div className="auth-container">
       <h2>{t('registerTitle')}</h2>
       
       {error && <div className="error-message">{t(error) || error}</div>}
-      
-      <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit} noValidate>
         <div className="form-group">
-          <label htmlFor="login">{t('username')}</label>
+          <label htmlFor="login">{t('username', { defaultValue: 'Nom d\'utilisateur' })}</label>
           <input
             type="text"
             id="login"

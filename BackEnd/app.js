@@ -9,8 +9,6 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
 
 // Importation de nos utilitaires et middlewares personnalisés
 const { logger, requestLogger } = require('./utils/logger');
@@ -18,6 +16,7 @@ const { errorHandler } = require('./utils/errorHandling');
 const validateEnv = require('./config/env');
 const { connectToDatabase } = require('./utils/dbConnection');
 const apiRoutes = require('./routes/api');
+const forumRoutes = require('./routes/forumRoutes');
 
 // Validation des variables d'environnement
 const config = validateEnv();
@@ -51,38 +50,20 @@ app.use(cors({
   credentials: true
 }));
 
-// Configuration de la session avec stockage MongoDB
+// Connexion à la base de données
 (async () => {
   try {
-    const mongoClient = await connectToDatabase();
-    
-    app.use(session({
-      secret: config.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: false,
-      store: MongoStore.create({ 
-        client: mongoClient,
-        dbName: config.MONGODB.DB_NAME,
-        collectionName: 'sessions',
-        ttl: config.SESSION.DURATION / 1000, // Convertir en secondes
-        autoRemove: 'native' // Utiliser la suppression automatique de MongoDB
-      }),
-      cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: config.SESSION.DURATION
-      }
-    }));
-    
-    logger.info('Session store connected to MongoDB');
+    await connectToDatabase();
+    logger.info('Connected to MongoDB');
   } catch (error) {
-    logger.error('Failed to initialize session store:', error);
+    logger.error('Failed to connect to database:', error);
     process.exit(1);
   }
 })();
 
 // Montage des routes API
 app.use('/api', apiRoutes);
+app.use('/api/forums', forumRoutes);
 
 // Route racine pour vérifier l'état du serveur
 app.get('/', (req, res) => {

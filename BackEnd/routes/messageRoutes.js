@@ -417,4 +417,94 @@ router.delete('/:messageId', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/messages/:messageId/replies/:replyId/like
+ * Ajout/suppression d'un like sur une réponse
+ */
+router.post('/:messageId/replies/:replyId/like', requireAuth, async (req, res) => {
+  try {
+    const { messageId, replyId } = req.params;
+    
+    if (!ObjectId.isValid(messageId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de message invalide'
+      });
+    }
+    
+    const messagesCollection = await getCollection('messages');
+    const userId = req.user.id;
+    
+    // Find the parent message
+    const message = await messagesCollection.findOne({
+      _id: new ObjectId(messageId)
+    });
+    
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: 'Message non trouvé'
+      });
+    }
+    
+    // Find the reply within the message
+    const replyIndex = message.replies?.findIndex(reply => reply.id === replyId);
+    
+    if (replyIndex === -1 || replyIndex === undefined) {
+      return res.status(404).json({
+        success: false,
+        message: 'Réponse non trouvée'
+      });
+    }
+    
+    // Vérifier si l'utilisateur a déjà liké cette réponse
+    const reply = message.replies[replyIndex];
+    const alreadyLiked = reply.likes && reply.likes.includes(userId);
+    
+    let operation;
+    let actionMessage;
+    
+    if (alreadyLiked) {
+      // Supprimer le like
+      operation = {
+        $pull: { [`replies.${replyIndex}.likes`]: userId }
+      };
+      actionMessage = 'Like supprimé avec succès';
+    } else {
+      // Ajouter le like
+      operation = {
+        $addToSet: { [`replies.${replyIndex}.likes`]: userId }
+      };
+      actionMessage = 'Like ajouté avec succès';
+    }
+    
+    await messagesCollection.updateOne(
+      { _id: new ObjectId(messageId) },
+      operation
+    );
+    
+    // Récupérer le message mis à jour pour connaître le nombre de likes sur la réponse
+    const updatedMessage = await messagesCollection.findOne({
+      _id: new ObjectId(messageId)
+    });
+    
+    const updatedReply = updatedMessage.replies[replyIndex];
+    
+    res.json({
+      success: true,
+      message: actionMessage,
+      liked: !alreadyLiked,
+      likeCount: updatedReply.likes ? updatedReply.likes.length : 0
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur serveur'
+    });
+  }
+});
+
+// Note: Les messages des utilisateurs sont gérés dans userRoutes.js via /api/user/messages/:userId
+
 module.exports = router;

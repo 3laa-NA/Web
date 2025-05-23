@@ -47,6 +47,38 @@
   color: var(--primary);
 }
 
+/* Champs obligatoires */
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.form-group label::after {
+  content: " *";
+  color: var(--error);
+  display: none;
+}
+
+.form-group label[for="firstName"]::after,
+.form-group label[for="lastName"]::after {
+  display: inline;
+}
+
+/* Validation des champs */
+.form-control.is-invalid {
+  border-color: var(--error);
+  background-color: var(--error-bg-light);
+}
+
+.invalid-feedback {
+  display: block;
+  color: var(--error);
+  font-size: 0.875em;
+  margin-top: var(--spacing-xs);
+}
+
 /* Styles pour les rangées dans un formulaire */
 .form-row {
   display: flex;
@@ -280,4 +312,14 @@ select.form-control:hover {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-disabled);
+}
+
+/* Dark mode */
+[data-theme="dark"] .form-control.is-invalid {
+  background-color: var(--error-bg);
+  border-color: var(--error);
+}
+
+[data-theme="dark"] .invalid-feedback {
+  color: var(--error-text);
 }

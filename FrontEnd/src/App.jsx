@@ -13,6 +13,7 @@ import Register from './components/auth/Register';
 import Dashboard from './components/pages/Dashboard';
 import PrivateMessagesPage from './components/pages/PrivateMessagesPage';
 import ProfilePage from './components/pages/ProfilePage';
+import UserProfile from './components/user/UserProfile';
 import AdminPage from './components/pages/AdminPage';
 import SettingsPage from './components/pages/SettingsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -45,10 +46,11 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/messages" element={<ProtectedRoute><PrivateMessagesPage /></ProtectedRoute>} />
-                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/forum/:forumId" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><PrivateMessagesPage /></ProtectedRoute>} />                  <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                  <Route path="/user/:login" element={<UserProfile />} />
                   <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                  <Route path="/admin" element={<ProtectedRoute isAdmin={true}><AdminPage /></ProtectedRoute>} />
+                  <Route path="/admin/*" element={<ProtectedRoute isAdmin={true}><AdminPage /></ProtectedRoute>} />
                   
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

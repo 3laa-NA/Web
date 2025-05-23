@@ -10,7 +10,6 @@ function PrivateMessagesPage() {
   
   return (
     <div className="page-container">
-      <h1>{t('navigation.privateMessages')}</h1>
       <PrivateMessages />
     </div>
   );

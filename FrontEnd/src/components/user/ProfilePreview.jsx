@@ -6,6 +6,15 @@ import { useTranslation } from 'react-i18next';
 function ProfilePreview({ user }) {
   const { t } = useTranslation(['common', 'features']);
   
+  // Fonction pour tronquer le texte
+  const truncateText = (text, maxLength = 7) => {
+    if (!text) return '';
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  // Obtenir le nom d'affichage
+  const displayName = truncateText(user.login || `${user.firstName || ''} ${user.lastName || ''}`.trim());
+  
   return (
     <div className="profile-preview">
       <div className="avatar">
@@ -16,9 +25,10 @@ function ProfilePreview({ user }) {
             {user.firstName.charAt(0)}{user.lastName.charAt(0)}
           </div>
         )}
-      </div>      <div className="user-info">
-        <p className="user-name">{user.login || `${user.firstName || ''} ${user.lastName || ''}`.trim()}</p>
-        <Link to="/profile" className="view-profile-link">{t('viewProfile')}</Link>
+      </div>
+      <div className="user-info">
+        <p className="user-name">{displayName}</p>
+        <Link to={`/user/${user.login}`} className="view-profile-link">{t('profile.publicProfile', { ns: 'features' })}</Link>
       </div>
     </div>
   );

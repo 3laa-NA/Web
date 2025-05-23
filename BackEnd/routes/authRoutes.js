@@ -88,7 +88,7 @@ router.post('/logout-all', authenticate, async (req, res) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    const { login, password, password2, firstname, lastname } = req.body;
+    const { login, password, password2, firstname, lastname, email } = req.body;
     
     // Validation de base
     if (!login || !password || !password2 || !firstname || !lastname) {
@@ -104,51 +104,62 @@ router.post('/register', async (req, res) => {
         message: 'Les mots de passe ne correspondent pas'
       });
     }
-    
-    const usersCollection = await getCollection('users');
-    
-    // Vérification de l'unicité du login
-    const existingUser = await usersCollection.findOne({ login });
-    if (existingUser) {
-      return res.status(409).json({
+
+    // Validation de l'email si fourni
+    if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      return res.status(400).json({
         success: false,
-        message: 'Un utilisateur avec ce login existe déjà'
+        message: 'Format d\'email invalide'
       });
     }
     
-    // Récupération des paramètres système
-    const settingsCollection = await getCollection('settings');
-    const settings = await settingsCollection.findOne({ key: 'system' });
+    const usersCollection = await getCollection('users');
     
-    // Détermination du statut initial de l'utilisateur
-    const requiresApproval = settings?.registrationRequiresApproval || false;
-    const initialStatus = requiresApproval ? 'pending' : 'active';
+    // Vérifier si le login existe déjà
+    const existingUser = await usersCollection.findOne({ login });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ce nom d\'utilisateur est déjà pris'
+      });
+    }
     
-    // Hachage du mot de passe et création de l'utilisateur
+    // Hacher le mot de passe
     const hashedPassword = await hashPassword(password);
     
-    const result = await usersCollection.insertOne({
-      login,
+    // Créer le nouvel utilisateur avec le statut 'pending'
+    const user = {      login,
       passwordHash: hashedPassword,
       firstName: firstname,
       lastName: lastname,
+      email: email || '',
+      bio: '',
       role: 'user',
-      status: initialStatus,
-      createdAt: new Date()
-    });
+      status: 'pending', // Par défaut, le statut est 'pending'
+      createdAt: new Date(),
+      lastLogin: null
+    };
+    
+    const result = await usersCollection.insertOne(user);
+    
+    if (!result.acknowledged) {
+      throw new Error('Échec de création de l\'utilisateur');
+    }
+
+    // Ne pas renvoyer le mot de passe dans la réponse
+    const { password: _, ...userWithoutPassword } = user;
     
     res.status(201).json({
       success: true,
-      message: requiresApproval 
-        ? 'Compte créé avec succès. En attente d\'approbation par un administrateur.' 
-        : 'Utilisateur créé avec succès',
-      userId: result.insertedId
+      message: 'Inscription réussie, en attente d\'approbation par un administrateur',
+      user: userWithoutPassword
     });
+    
   } catch (error) {
-    console.error('Erreur:', error);
+    console.error('Erreur d\'inscription:', error);
     res.status(500).json({
       success: false,
-      message: 'Erreur serveur'
+      message: 'Erreur lors de l\'inscription'
     });
   }
 });

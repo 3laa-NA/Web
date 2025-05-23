@@ -11,16 +11,42 @@ export const messagesApi = {
   /**
    * Récupérer tous les messages avec filtrage optionnel
    * @param {Object} filters - Paramètres de filtrage
+   * @param {string} filters.forumId - ID du forum
    * @returns {Promise<Object>} - Réponse avec les messages
    */
-  getAll: async (filters = {}) => {
+  getAll: async ({ forumId } = {}) => {
     try {
-      const { response, data } = await apiClient.get(ENDPOINTS.MESSAGES, { params: filters });
-      return processResponse(response, data);    } catch (error) {
+      if (!forumId) {
+        throw new Error('Forum ID is required');
+      }
+
+      const { response, data } = await apiClient.get(ENDPOINTS.MESSAGES, { 
+        params: { forumId } 
+      });
+      
+      if (response.status === 403) {
+        return {
+          success: false,
+          error: 'Accès non autorisé à ce forum'
+        };
+      }
+
+      return {
+        success: response.status === 200,
+        messages: data.messages || [],
+        ...data
+      };
+    } catch (error) {
       console.error('Erreur de récupération des messages:', error);
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          error: 'Accès non autorisé à ce forum'
+        };
+      }
       return {
         success: false,
-        error: error.message || 'Échec de récupération des messages'
+        error: error.response?.data?.message || error.message || 'Échec de récupération des messages'
       };
     }
   },
@@ -45,16 +71,26 @@ export const messagesApi = {
   /**
    * Créer un nouveau message
    * @param {Object} messageData - Données du message
+   * @param {string} messageData.text - Contenu du message
+   * @param {string} messageData.forumId - ID du forum
    * @returns {Promise<Object>} - Réponse avec le message créé
    */
-  create: async (messageData) => {
+  create: async ({ text, forumId }) => {
     try {
-      const { response, data } = await apiClient.post(ENDPOINTS.MESSAGES, messageData);
-      return processResponse(response, data);    } catch (error) {
+      if (!forumId) {
+        throw new Error('Forum ID is required');
+      }
+
+      const { response, data } = await apiClient.post(ENDPOINTS.MESSAGES, { text, forumId });
+      return {
+        success: response.status === 201,
+        ...data
+      };
+    } catch (error) {
       console.error('Erreur de création du message:', error);
       return {
         success: false,
-        error: error.message || 'Échec de création du message'
+        error: error.response?.data?.message || error.message || 'Échec de création du message'
       };
     }
   },
@@ -144,7 +180,47 @@ export const messagesApi = {
         error: error.message || 'Échec de basculement du statut j\'aime'
       };
     }
-  }
+  },
+
+  /**
+   * Basculer le statut 'j'aime' sur une réponse
+   * @param {string} messageId - ID du message parent
+   * @param {string} replyId - ID de la réponse
+   * @returns {Promise<Object>} - Réponse avec le statut du 'j'aime'
+   */
+  toggleReplyLike: async (messageId, replyId) => {
+    try {
+      const { response, data } = await apiClient.post(ENDPOINTS.MESSAGE_REPLY_LIKE(messageId, replyId));
+      return processResponse(response, data);
+    } catch (error) {
+      console.error('Erreur de basculement de j\'aime sur la réponse:', error);
+      return {
+        success: false,
+        error: error.message || 'Échec de basculement du statut j\'aime sur la réponse'
+      };
+    }
+  },
+
+  /**
+   * Récupérer tous les messages d'un utilisateur
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {Promise<Object>} - Réponse avec les messages
+   */
+  getUserMessages: async (userId) => {
+    try {      const { data } = await apiClient.get(`${ENDPOINTS.USER_MESSAGES(userId)}`);
+      return {
+        success: data.success,
+        messages: data.messages || [],
+        ...data
+      };
+    } catch (error) {
+      console.error('Erreur de récupération des messages utilisateur:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Échec de récupération des messages'
+      };
+    }
+  },
 };
 
 export default messagesApi;

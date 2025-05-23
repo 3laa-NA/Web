@@ -7,82 +7,86 @@
   margin-bottom: var(--spacing-md);
   position: relative;
   border-left: 4px solid transparent;
-  background-color: rgba(248, 249, 250, 0.8);
+  background-color: var(--bg-light);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-normal);
   animation: slideIn var(--transition-normal);
 }
 
+.alert-close {
+  position: absolute;
+  right: var(--spacing-sm);
+  top: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.alert-close:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
 .alert-success {
-  background-color: rgba(6, 214, 160, 0.1);
+  background-color: var(--success-bg);
   border-color: var(--success);
-  color: var(--success);
+  color: var(--success-text);
 }
 
 .alert-info {
-  background-color: rgba(17, 138, 178, 0.1);
+  background-color: var(--info-bg);
   border-color: var(--info);
-  color: var(--info);
+  color: var(--info-text);
 }
 
 .alert-warning {
-  background-color: rgba(255, 209, 102, 0.1);
+  background-color: var(--warning-bg);
   border-color: var(--warning);
-  color: var(--warning);
+  color: var(--warning-text);
 }
 
 .alert-error {
-  background-color: rgba(239, 71, 111, 0.1);
+  background-color: var(--error-bg);
   border-color: var(--error);
-  color: var(--error);
+  color: var(--error-text);
 }
 
-.alert-icon {
-  display: flex;
-  gap: var(--spacing-sm);
-  align-items: center;
+/* Dark mode */
+[data-theme="dark"] .alert {
+  background-color: var(--bg-dark);
 }
 
-.alert-icon::before {
-  font-size: var(--font-size-xl);
+[data-theme="dark"] .alert-success {
+  background-color: rgba(6, 214, 160, 0.15);
+  color: #7fffd4;
 }
 
-.alert-success.alert-icon::before {
-  content: '✅';
+[data-theme="dark"] .alert-error {
+  background-color: rgba(239, 71, 111, 0.15);
+  color: #ffa7a7;
 }
 
-.alert-info.alert-icon::before {
-  content: 'ℹ️';
+[data-theme="dark"] .alert-info {
+  background-color: rgba(17, 138, 178, 0.15);
+  color: #8ee3ff;
 }
 
-.alert-warning.alert-icon::before {
-  content: '⚠️';
+[data-theme="dark"] .alert-warning {
+  background-color: rgba(255, 209, 102, 0.15);
+  color: #ffe4a1;
 }
 
-.alert-error.alert-icon::before {
-  content: '❌';
-}
-
-.alert-dismissible {
-  padding-right: 3rem;
-}
-
-.alert-dismissible .close-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0.5rem;
+[data-theme="dark"] .alert-close {
   color: inherit;
-  background: transparent;
-  border: none;
-  font-size: var(--font-size-lg);
-  cursor: pointer;
-  opacity: 0.5;
-  transition: opacity var(--transition-fast);
 }
 
-.alert-dismissible .close-btn:hover {
-  opacity: 1;
+[data-theme="dark"] .alert-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Toast notifications */
@@ -198,6 +202,72 @@
 .status-busy {
   background-color: var(--error);
   box-shadow: 0 0 0 2px rgba(239, 71, 111, 0.2);
+}
+
+/* Confirm Dialog */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-dialog {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+}
+
+.confirm-message {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+}
+
+.confirm-actions .btn {
+  min-width: 100px;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+/* Dark mode */
+[data-theme="dark"] .confirm-dialog {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Animations */

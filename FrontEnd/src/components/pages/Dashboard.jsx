@@ -16,6 +16,7 @@ function Dashboard() {
   // États pour la recherche et le filtrage des messages
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Pour forcer le rafraîchissement
 
   // Gestionnaire pour la recherche de messages
   const handleSearch = (query) => {
@@ -27,13 +28,21 @@ function Dashboard() {
     setDateFilter(filter);
   };
   
+  // Gestionnaire pour forcer le rafraîchissement
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
   // Gestionnaire pour poster un nouveau message
-  const handlePostMessage = async (text) => {
+  const handlePostMessage = async (text, forumId) => {
     try {
-      const response = await API.messages.post({ text });
+      if (!forumId) {
+        throw new Error('Forum ID is required');
+      }
+      
+      const response = await API.messages.create({ text, forumId });
       if (response.success) {
-        // Trigger refresh in MessageSection by changing a prop
-        setDateFilter({ ...dateFilter });
+        handleRefresh(); // Forcer le rafraîchissement après un post réussi
         return true;
       } else {
         throw new Error(response.error);
@@ -43,7 +52,8 @@ function Dashboard() {
       throw error;
     }
   };
-    return (
+
+  return (
     <div className="dashboard">
       <Header 
         onSearch={handleSearch} 
@@ -62,7 +72,9 @@ function Dashboard() {
         <div className="dashboard-bottom-row">
           <MessageSection 
             searchQuery={searchQuery} 
-            dateFilter={dateFilter} 
+            dateFilter={dateFilter}
+            refreshTrigger={refreshTrigger}
+            onRefresh={handleRefresh}
           />
         </div>
       </main>

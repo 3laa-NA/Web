@@ -38,14 +38,17 @@ const { hashPassword } = require('../utils/securityUtils');
     const usersCol = db.collection(COLLECTIONS.USERS);
     const adminPass = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
     const adminHash = await hashPassword(adminPass);
+    const adminId = new ObjectId();
     await usersCol.insertOne({
-      _id: new ObjectId(),
+      _id: adminId,
       login: 'admin',
       passwordHash: adminHash,
       firstName: 'Admin',
       lastName: 'System',
       role: 'admin',
       status: 'active',
+      email: 'admin@system.com',
+      bio: 'Administrateur système',
       createdAt: new Date(),
       lastLogin: null
     });
@@ -53,25 +56,54 @@ const { hashPassword } = require('../utils/securityUtils');
 
     // 4) Création du compte développeur
     const devHash = await hashPassword('lmao');
+    const devId = new ObjectId();
     await usersCol.insertOne({
-      _id: new ObjectId(),
+      _id: devId,
       login: 'lmao',
       passwordHash: devHash,
       firstName: 'Dev',
       lastName: 'Account',
       role: 'admin',
       status: 'active',
+      email: 'dev@example.com',
+      bio: 'Compte développeur',
       createdAt: new Date(),
       lastLogin: null
     });
     console.log('Compte dev créé : lmao / lmao');
 
-    // 5) Peuplement de quelques utilisateurs de test
+    // 5) Création des forums par défaut
+    const forumsCol = db.collection(COLLECTIONS.FORUMS);
+    const publicForumId = new ObjectId();
+    const privateForumId = new ObjectId();
+    
+    await forumsCol.insertMany([
+      {
+        _id: publicForumId,
+        name: 'Forum Public',
+        description: 'Forum accessible à tous les utilisateurs',
+        isPublic: true,
+        createdAt: new Date(),
+        createdBy: adminId
+      },
+      {
+        _id: privateForumId,
+        name: 'Forum Admin',
+        description: 'Forum réservé aux administrateurs',
+        isPublic: false,
+        createdAt: new Date(),
+        createdBy: adminId
+      }
+    ]);
+    console.log('Forums par défaut créés');
+
+    // 6) Peuplement de quelques utilisateurs de test
     const sample = [
-      { login: 'alice.wonder', firstName: 'Alice', lastName: 'Wonder' },
-      { login: 'bob.builder', firstName: 'Bob', lastName: 'Builder' },
-      { login: 'charlie.brown', firstName: 'Charlie', lastName: 'Brown' }
+      { login: 'alice.wonder', firstName: 'Alice', lastName: 'Wonder', email: 'alice@example.com', bio: 'Passionnée de développement front-end' },
+      { login: 'bob.builder', firstName: 'Bob', lastName: 'Builder', email: 'bob@example.com', bio: 'Expert en architecture logicielle' },
+      { login: 'charlie.brown', firstName: 'Charlie', lastName: 'Brown', email: 'charlie@example.com', bio: 'Développeur full-stack' }
     ];
+    
     for (const u of sample) {
       const pwHash = await hashPassword(u.login);
       await usersCol.insertOne({
@@ -80,6 +112,8 @@ const { hashPassword } = require('../utils/securityUtils');
         passwordHash: pwHash,
         firstName: u.firstName,
         lastName: u.lastName,
+        email: u.email,
+        bio: u.bio,
         role: 'user',
         status: 'active',
         createdAt: new Date(),
@@ -88,25 +122,42 @@ const { hashPassword } = require('../utils/securityUtils');
       console.log(`• Utilisateur ajouté : ${u.login} / ${u.login}`);
     }
 
-    // 6) Jeu de messages publics réalistes
+    // 7) Configuration des paramètres système
+    const settingsCol = db.collection(COLLECTIONS.SETTINGS);
+    await settingsCol.insertOne({
+      key: 'system',
+      registrationRequiresApproval: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    console.log('• Paramètres système initialisés avec approbation requise pour l\'inscription');
+    
+    // 8) Jeu de messages publics réalistes
     const messagesCol = db.collection(COLLECTIONS.MESSAGES);
-    const users = await usersCol.find({ status: 'active', role: 'user' }).toArray();
-    const sampleTexts = [
-      'Bonjour à tous ! Hâte de collaborer sur ce nouveau projet.',
-      'Je viens de mettre à jour le document de projet, vos retours sont les bienvenus.',
-      'Quelqu’un a des informations concernant la prochaine réunion ?',
-      'La réunion est prévue pour vendredi à 14h, pensez à préparer vos questions.',
-      'Merci pour le retour rapide sur le ticket #42.',
-      'Super initiative ! Continuons sur cette lancée.',
-      'Je rencontre une erreur sur le formulaire d’inscription, quelqu’un peut m’aider ?',
-      'Félicitations à l’équipe pour le succès de l’événement hier !'
-    ];
-    const messagesToInsert = sampleTexts.map((text, i) => {
+    const users = await usersCol.find({ status: 'active' }).toArray();
+    const sampleTexts = {
+      public: [
+        'Bonjour à tous ! Hâte de collaborer sur ce nouveau projet.',
+        'Je viens de mettre à jour le document de projet, vos retours sont les bienvenus.',
+        'Quelqu\'un a des informations concernant la prochaine réunion ?',
+        'La réunion est prévue pour vendredi à 14h, pensez à préparer vos questions.',
+        'Merci pour le retour rapide sur le ticket #42.'
+      ],
+      private: [
+        'Discussion sur la nouvelle architecture système',
+        'Points importants sur la sécurité à aborder',
+        'Revue des performances du dernier déploiement'
+      ]
+    };
+
+    // Messages pour le forum public
+    const publicMessages = sampleTexts.public.map((text, i) => {
       const user = users[i % users.length];
       const ts = new Date(Date.now() - i * 3600 * 1000);
       return {
         _id: new ObjectId(),
         userId: user._id,
+        forumId: publicForumId,
         user: `${user.firstName} ${user.lastName}`,
         login: user.login,
         avatar: (user.firstName.charAt(0) + user.lastName.charAt(0)).toUpperCase(),
@@ -114,13 +165,33 @@ const { hashPassword } = require('../utils/securityUtils');
         createdAt: ts,
         timestamp: ts,
         likes: [],
-        parentId: null
+        replies: []
       };
     });
-    await messagesCol.insertMany(messagesToInsert);
-    console.log(messagesToInsert.length + ' messages publics insérés');
 
-    // 7) Jeux de conversations privées variées
+    // Messages pour le forum privé (admin)
+    const privateMessages = sampleTexts.private.map((text, i) => {
+      const adminUser = users.find(u => u.role === 'admin');
+      const ts = new Date(Date.now() - i * 3600 * 1000);
+      return {
+        _id: new ObjectId(),
+        userId: adminUser._id,
+        forumId: privateForumId,
+        user: `${adminUser.firstName} ${adminUser.lastName}`,
+        login: adminUser.login,
+        avatar: (adminUser.firstName.charAt(0) + adminUser.lastName.charAt(0)).toUpperCase(),
+        text,
+        createdAt: ts,
+        timestamp: ts,
+        likes: [],
+        replies: []
+      };
+    });
+
+    await messagesCol.insertMany([...publicMessages, ...privateMessages]);
+    console.log(`${publicMessages.length + privateMessages.length} messages insérés dans les forums`);
+
+    // 9) Jeux de conversations privées variées
     const convCol = db.collection(COLLECTIONS.CONVERSATIONS);
     const pmCol = db.collection(COLLECTIONS.PRIVATE_MESSAGES);
     // Récupérer tous les utilisateurs actifs

@@ -28,14 +28,24 @@ export const authApi = {
         console.warn('Échec de la connexion :', data.message || 'Erreur inconnue');
       }
 
-      return result;
-    } catch (error) {
+      return result;    } catch (error) {
       console.error('Erreur de connexion:', error);
+      
+      // Gestion spécifique des statuts de compte
+      let errorMessage = getErrorMessage(error, 'Échec d\'authentification');
+      let errorCode = error.response?.data?.code || 'AUTH_ERROR';
+      
+      // Détecter le message spécifique pour un compte en attente d'approbation
+      if (error.response?.status === 403 && error.response?.data?.message?.includes('en attente')) {
+        errorCode = 'ACCOUNT_PENDING';
+        errorMessage = 'errors.accountPending'; // Utiliser la clé de traduction
+      }
 
       return {
         success: false,
-        error: getErrorMessage(error, 'Échec d\'authentification'),
-        errorCode: error.response?.data?.code || 'AUTH_ERROR'
+        error: errorMessage,
+        errorCode: errorCode,
+        message: error.response?.data?.message
       };
     }
   },
@@ -44,10 +54,20 @@ export const authApi = {
    * Enregistrer un nouvel utilisateur
    * @param {Object} userData - Données d'inscription de l'utilisateur
    * @returns {Promise<Object>} - Réponse avec le résultat
-   */
-  register: async (userData) => {
+   */  register: async (userData) => {
     try {
-      const { response, data } = await apiClient.put(ENDPOINTS.REGISTER, userData);
+      // Vérifier les données pour s'assurer qu'elles sont correctement formatées
+      // pour la route d'inscription côté backend
+      const formattedData = {
+        login: userData.login,
+        password: userData.password,
+        password2: userData.password, // Le backend attend password et password2
+        firstname: userData.firstName,  // Assurer la compatibilité avec le backend
+        lastname: userData.lastName
+      };
+      
+      console.log('Données d\'inscription à envoyer:', formattedData);
+      const { response, data } = await apiClient.post('/auth/register', formattedData);
       return processResponse(response, data);
     } catch (error) {
       console.error('Erreur d\'inscription:', error);

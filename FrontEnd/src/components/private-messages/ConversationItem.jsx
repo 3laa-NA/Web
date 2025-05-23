@@ -6,11 +6,10 @@ function ConversationItem({ conversation, isSelected, onClick }) {
   const { t } = useTranslation('features');
   
   // Extract the user data from the conversation
-  const displayName = conversation.withName || conversation.withLogin || t('privateMessages.unknownUser', { defaultValue: 'Utilisateur inconnu' });
+  const displayName = conversation.withName || t('privateMessages.unknownUser', { defaultValue: 'Utilisateur inconnu' });
   const avatarText = displayName.charAt(0).toUpperCase();
-  const previewText = conversation.lastMessage?.text || t('privateMessages.noMessages');
+  const previewText = conversation.lastMessage || t('privateMessages.noMessages');
   const unreadCount = conversation.unreadBy?.length || 0;
-
   return (
     <li 
       className={`conversation-item ${isSelected ? 'selected' : ''} ${unreadCount > 0 ? 'unread' : ''}`}

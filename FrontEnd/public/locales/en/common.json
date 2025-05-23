@@ -15,16 +15,16 @@
   "from": "From",
   "to": "To",
   "yes": "Yes",
-  "no": "No",
-  "back": "Back",
+  "no": "No",  "back": "Back",
   "next": "Next",
   "retry": "Retry",
   "refresh": "Refresh",
+  "create": "Create",
   "defaultUser": "user",
   "menu": "Menu",
-  "selectLanguage": "Select language",
-  "post": "Send",
+  "selectLanguage": "Select language",  "post": "Send",
   "submit": "Submit",
+  "reply": "Reply",
   "clickToRetry": "Click to retry connection",
   "darkTheme": "dark theme",
   "lightTheme": "light theme",
@@ -32,6 +32,10 @@
   "refreshPage": "Refresh Page",
   "viewProfile": "View Profile",
   "devMode": "Development Mode",
+  "name": "Name",
+  "email": "Email",
+  "actions": "Actions",
+  "forums": "Forums",
   
   "navigation": {
     "dashboard": "Dashboard",
@@ -42,9 +46,11 @@
     "logout": "Logout",
     "login": "Login",
     "register": "Register",
-    "settings": "Settings"
+    "settings": "Settings",
+    "public": "Public"
   },
-    "connection": {
+  
+  "connection": {
     "backendConnected": "Connected to server",
     "backendDisconnected": "Server unavailable",
     "checkingConnection": "Checking server connection..."

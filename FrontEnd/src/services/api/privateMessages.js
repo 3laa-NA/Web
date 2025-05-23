@@ -8,9 +8,19 @@ import { apiClient } from '../apiClient';
  */
 export async function getConversations() {
   try {
+    console.log('Requesting private messages conversations...');
     const { data } = await apiClient.get('/private-messages/conversations');
-    return data;  } catch (error) {
+    console.log('API response for conversations:', data);
+    return data;
+  } catch (error) {
     console.error('Échec de récupération des conversations:', error);
+    // Log more detailed error info for debugging
+    if (error.response) {
+      console.error('Error response:', error.response.status, error.response.data);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    }
+    
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Échec de chargement des conversations'

@@ -15,11 +15,11 @@
   "from": "Du",
   "to": "Au",
   "yes": "Oui",
-  "no": "Non",
-  "back": "Retour",
+  "no": "Non",  "back": "Retour",
   "next": "Suivant",
   "retry": "Réessayer",
   "refresh": "Actualiser",
+  "create": "Créer",
   "defaultUser": "utilisateur",
   "menu": "Menu",
   "selectLanguage": "Sélectionner la langue",
@@ -33,6 +33,10 @@
   "refreshPage": "Actualiser la page",
   "viewProfile": "Voir le profil",
   "devMode": "Mode développement",
+  "name": "Nom",
+  "email": "Email",
+  "actions": "Actions",
+  "forums": "Forums",
   
   "navigation": {
     "dashboard": "Tableau de bord",
@@ -43,9 +47,11 @@
     "logout": "Déconnexion",
     "login": "Connexion",
     "register": "Inscription",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "public": "Public"
   },
-    "connection": {
+  
+  "connection": {
     "backendConnected": "Connecté au serveur",
     "backendDisconnected": "Serveur inaccessible",
     "checkingConnection": "Vérification de la connexion au serveur..."

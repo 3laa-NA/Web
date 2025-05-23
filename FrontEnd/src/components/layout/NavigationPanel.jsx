@@ -18,16 +18,15 @@ function NavigationPanel() {
   
   return (
     <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-brand">
-          <Link to="/">Organiz'Asso</Link>
-        </div>
+      <div className="navbar-container">        <Link to="/" className="navbar-brand">
+          <img src="/logo.svg" alt="Logo" className="navbar-logo" />
+          <span>{t('appName')}</span>
+        </Link>
         
-        <ul className="navbar-nav">
-          {user && (
+        <ul className="navbar-nav">          {user && (
             <>
               <li><NavLink to="/dashboard" className="nav-link">{t('navigation.dashboard')}</NavLink></li>
-              <li><NavLink to="/messages" className="nav-link">{t('navigation.messages')}</NavLink></li>
+              <li><NavLink to="/messages" className="nav-link">{t('navigation.privateMessages')}</NavLink></li>
               <li><NavLink to="/profile" className="nav-link">{t('navigation.profile')}</NavLink></li>
               {user.role === 'admin' && <li><NavLink to="/admin" className="nav-link">{t('navigation.admin')}</NavLink></li>}
             </>

@@ -10,10 +10,9 @@ function ConversationList({ conversations, loading, selectedId, onSelect }) {
   if (loading) {
     return <div className="loading">{t('privateMessages.loading')}</div>;
   }
-  
-  return (
+    return (
     <div className="conversation-list">
-      <h3>{t('privateMessages.privateMessages')}</h3>
+      <h3>{t('privateMessages.myConversations', { defaultValue: 'Mes conversations' })}</h3>
       
       {conversations.length === 0 ? (
         <p>{t('privateMessages.noMessages')}</p>

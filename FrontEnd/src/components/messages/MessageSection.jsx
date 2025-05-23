@@ -1,78 +1,86 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../contexts/AuthContext';
-import NewMessage from './NewMessage';
-import MessageList from './MessageList';
+import { useParams } from 'react-router-dom';
 import { API } from '../../services/api';
+import MessageList from './MessageList';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Section principale d'affichage des messages
  */
-function MessageSection({ searchQuery, dateFilter }) {
-  const { t } = useTranslation('features');
+function MessageSection({ searchQuery, dateFilter, onRefresh, refreshTrigger }) {
+  const { t } = useTranslation(['features', 'common']);
   const { user } = useAuth();
-  const [messages, setMessages] = useState([]);
+  const { forumId } = useParams();  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [welcomeMessage, setWelcomeMessage] = useState(null);
+  const [forumInfo, setForumInfo] = useState(null);
   
-  // Chargement initial des messages depuis l'API
+  // Helper function to check if we're in dashboard
+  const isDashboard = window.location.pathname === '/dashboard';
+
+  // Chargement initial des messages et rafraîchissement
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         setLoading(true);
         setError(null);
+        setWelcomeMessage(null);        if (!forumId) {
+          if (isDashboard) {
+            setWelcomeMessage(t('messages.error.selectForum', { defaultValue: 'Bienvenue ! Choisissez un forum dans la barre latérale pour commencer à participer aux discussions.' }));
+          } else {
+            setError(t('forums.errors.invalid'));
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Récupérer les informations du forum
+        try {
+          const forumResponse = await API.forums.getById(forumId);
+          if (forumResponse.success) {
+            setForumInfo(forumResponse.forum);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération des informations du forum:', error);
+        }
         
-        // Récupérer les messages depuis l'API
-        const response = await API.messages.getAll();
+        const response = await API.messages.getAll({ forumId });
         
         if (response.success) {
-          const raw = response.data?.messages || [];
-          // Traiter les messages pour correspondre aux attentes du composant
-          const formattedMessages = raw.map(msg => ({
-            id: msg._id || msg.id,
-            userId: msg.userId,
-            user: msg.user || `${msg.firstName || ''} ${msg.lastName || ''}`.trim() || msg.login,
-            avatar: msg.avatar || (msg.firstName && msg.firstName.charAt(0)) || (msg.user && msg.user.charAt(0)) || '?',
-            login: msg.login,
-            text: msg.text,
-            createdAt: msg.createdAt || msg.timestamp,
-            timestamp: msg.timestamp || msg.createdAt,
-            likes: Array.isArray(msg.likes) ? msg.likes : [],
-            replies: Array.isArray(msg.replies) ? msg.replies.map(reply => ({
-              id: reply._id || reply.id,
-              userId: reply.userId,
-              user: reply.user || `${reply.firstName || ''} ${reply.lastName || ''}`.trim() || reply.login,
-              avatar: reply.avatar || (reply.firstName && reply.firstName.charAt(0)) || (reply.user && reply.user.charAt(0)) || '?',
-              login: reply.login,
-              text: reply.text,
-              timestamp: reply.timestamp || reply.createdAt,
-              likes: Array.isArray(reply.likes) ? reply.likes : []
-            })) : []
-          }));
-          
-          setMessages(formattedMessages);
+          setMessages(response.messages || []);
         } else {
-          throw new Error(response.error || t('messages.failedToLoadMessages', { ns: 'features' }));
+          // Handle specific error cases
+          if (response.error?.includes('Accès non autorisé')) {
+            setError(t('messages.error.unauthorized', { defaultValue: 'Accès non autorisé à ce forum' }));
+          } else {
+            setError(t('messages.error.loading', { defaultValue: 'Erreur lors du chargement des messages' }));
+          }
         }
       } catch (error) {
         console.error('Erreur lors du chargement des messages:', error);
-        setError(error.message || t('messages.connectionError', { ns: 'features' }));
-        setMessages([]);
+        if (error.response?.status === 403) {
+          setError(t('messages.error.unauthorized', { defaultValue: 'Accès non autorisé à ce forum' }));
+        } else {
+          setError(t('messages.error.unexpected', { defaultValue: 'Une erreur inattendue est survenue' }));
+        }
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchMessages();
-  }, [t]);
-  
+  }, [t, forumId, refreshTrigger]);
+
   // Filtrage des messages
-  const filteredMessages = messages.filter(message => {
-    const matchesSearch = searchQuery 
-      ? message.text.toLowerCase().includes(searchQuery.toLowerCase()) 
-      : true;
-      
-    const messageDate = new Date(message.createdAt || message.timestamp);
+  const filteredMessages = messages.filter(msg => {
+    // Filtre de recherche
+    const messageText = msg.text.toLowerCase();
+    const searchMatch = !searchQuery || messageText.includes(searchQuery.toLowerCase());
+    
+    // Filtre de date
+    const messageDate = new Date(msg.timestamp);
     const afterStartDate = dateFilter.start 
       ? messageDate >= new Date(dateFilter.start) 
       : true;
@@ -80,9 +88,10 @@ function MessageSection({ searchQuery, dateFilter }) {
       ? messageDate <= new Date(dateFilter.end) 
       : true;
       
-    return matchesSearch && afterStartDate && beforeEndDate;
+    return searchMatch && afterStartDate && beforeEndDate;
   });
-    // Fonction pour ajouter une réponse à un message principal uniquement
+
+  // Fonction pour ajouter une réponse à un message principal uniquement
   const addReplyToMessage = (messagesList, messageId, newReply) => {
     return messagesList.map(message => {
       // Vérifier si c'est le message principal auquel on veut répondre
@@ -98,47 +107,27 @@ function MessageSection({ searchQuery, dateFilter }) {
     });
   };
   
-  // Gestionnaire pour poster un nouveau message
-  const handlePostMessage = async (text) => {
-    if (!text.trim()) return;
-    
+  // Fonction pour gérer la création d'un nouveau message
+  const handlePostMessage = async (messageText) => {
     try {
-      setError(null);
-      
-      // Créer le nouveau message pour une mise à jour immédiate de l'interface
-      const newMessage = {
-        id: `temp-${Date.now()}`,
-        user: user.firstName + ' ' + user.lastName,
-        avatar: user.firstName.charAt(0) + user.lastName.charAt(0),
-        text,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        replies: []
-      };
-      
-      // Ajouter d'abord le message au state pour une meilleure UX
-      setMessages([newMessage, ...messages]);
-      
-      const response = await API.messages.create({ text });
-      
+      const response = await API.messages.create({ 
+        text: messageText,
+        forumId
+      });
+
       if (response.success) {
-        // Mettre à jour l'ID du message avec l'ID fourni par le serveur
-        setMessages(prevMessages => 
-          prevMessages.map(msg => 
-            msg.id === newMessage.id 
-              ? { ...msg, id: response.messageId || response.createdMessage._id } 
-              : msg
-          )
-        );      } else {
-        setError(response.message || t('messages.unexpectedError', { ns: 'features' }));
+        // Rafraîchir la liste des messages
+        await fetchMessages();
+      } else {
+        setError(t('messages.error.failed', { defaultValue: 'Échec de l\'envoi du message' }));
       }
     } catch (error) {
-      console.error('Erreur lors de la publication du message:', error);
-      setError(error.message || t('messages.unexpectedError', { ns: 'features' }));
+      console.error('Erreur lors de la création du message:', error);
+      setError(t('messages.error.unexpected', { defaultValue: 'Une erreur inattendue est survenue' }));
     }
   };
-    // Gestionnaire pour poster une réponse
+
+  // Gestionnaire pour poster une réponse
   const handlePostReply = async (text, parentId) => {
     if (!text.trim()) return;
     
@@ -202,13 +191,45 @@ function MessageSection({ searchQuery, dateFilter }) {
   // Gestionnaire pour rafraîchir les messages
   const handleRefresh = async () => {
     try {
+      if (!forumId) {
+        const errorMessage = isDashboard 
+          ? t('messages.error.selectForum', { defaultValue: 'Veuillez sélectionner un forum pour voir les messages' })
+          : t('forums.errors.invalid', { defaultValue: 'Forum invalide' });
+        setError(errorMessage);
+        return;
+      }
+
       setLoading(true);
       setError(null);
-      
-      const response = await API.messages.getAll();
+
+      const response = await API.messages.getAll({ forumId });
       
       if (response.success) {
-        setMessages(response.data?.messages || []);
+        // Formater les messages comme dans le chargement initial
+        const raw = response.messages || response.data?.messages || [];
+        const formattedMessages = raw.map(msg => ({
+          id: msg._id || msg.id,
+          userId: msg.userId,
+          user: msg.user || `${msg.firstName || ''} ${msg.lastName || ''}`.trim() || msg.login,
+          avatar: msg.avatar || (msg.firstName && msg.firstName.charAt(0)) || (msg.user && msg.user.charAt(0)) || '?',
+          login: msg.login,
+          text: msg.text,
+          createdAt: msg.createdAt || msg.timestamp,
+          timestamp: msg.timestamp || msg.createdAt,
+          likes: Array.isArray(msg.likes) ? msg.likes : [],
+          replies: Array.isArray(msg.replies) ? msg.replies.map(reply => ({
+            id: reply._id || reply.id,
+            parentId: msg._id || msg.id,
+            userId: reply.userId,
+            user: reply.user || `${reply.firstName || ''} ${reply.lastName || ''}`.trim() || reply.login,
+            avatar: reply.avatar || (reply.firstName && reply.firstName.charAt(0)) || (msg.user && msg.user.charAt(0)) || '?',
+            login: reply.login,
+            text: reply.text,
+            timestamp: reply.timestamp || reply.createdAt,
+            likes: Array.isArray(reply.likes) ? reply.likes : []
+          })) : []
+        }));
+        setMessages(formattedMessages);
       } else {
         throw new Error(response.error || t('messages.unexpectedError', { ns: 'features' }));
       }
@@ -220,21 +241,36 @@ function MessageSection({ searchQuery, dateFilter }) {
       setLoading(false);
     }
   };
-    return (
-    <div className="messages-container">
-      <h2 className="section-title">
-        {t('navigation.messages', { ns: 'common' })}
-        {filteredMessages.length > 0 && <span>({filteredMessages.length})</span>}
-        <button 
-          className="section-title-action" 
-          onClick={handleRefresh}
-          disabled={loading}
-        >
-          🔄 {t('refresh', { ns: 'common', defaultValue: 'Actualiser' })}
-        </button>
-      </h2>
-      
-      {error && <div className="error-message" role="alert">{t(error) || error}</div>}
+
+  return (
+    <div className="messages-container">      
+      <div className="section-header">        
+        <div className="section-title-container">        
+          <div className="section-title-row">
+            <h2 className="section-title">
+              {t('navigation.messages', { ns: 'common' })}
+              {filteredMessages.length > 0 && <span>({filteredMessages.length})</span>}
+            </h2>
+            {forumInfo?.description && (
+              <div className="forum-description">{forumInfo.description}</div>
+            )}
+            <button 
+              className="section-title-action" 
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              🔄 {t('refresh', { ns: 'common', defaultValue: 'Actualiser' })}
+            </button>
+          </div>
+        </div>        
+      </div>
+      {error && <div className="error-message" role="alert">{error}</div>}
+      {welcomeMessage && (
+        <div className="welcome-message">
+          <h3>{t('messages.welcome')}</h3>
+          <p>{welcomeMessage}</p>
+        </div>
+      )}
       {loading ? (
         <div className="loading-messages">{t('messages.loading')}</div>
       ) : filteredMessages.length === 0 ? (

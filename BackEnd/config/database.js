@@ -28,8 +28,7 @@ const COLLECTIONS = {
   PRIVATE_MESSAGES: 'private_messages',
   CONVERSATIONS: 'conversations',
   SETTINGS: 'settings',
-  TOKENS: 'tokens',
-  SESSIONS: 'sessions'
+  FORUMS: 'forums'
 };
 
 // Index à créer pour optimiser les requêtes
@@ -51,9 +50,10 @@ const INDEXES = {
     { key: { conversationId: 1 }, options: {} },
     { key: { timestamp: 1 }, options: {} }
   ],
-  [COLLECTIONS.TOKENS]: [
-    { key: { userId: 1 }, options: {} },
-    { key: { expiresAt: 1 }, options: { expireAfterSeconds: 0 } }
+  [COLLECTIONS.FORUMS]: [
+    { key: { name: 1 }, options: { unique: true } },
+    { key: { isPublic: 1 }, options: {} },
+    { key: { createdAt: -1 }, options: {} }
   ]
 };
 

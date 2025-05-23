@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Utilisateur non authentifié');
       }
       
-      const response = await API.auth.updateProfile(profileData);
+      const response = await API.users.updateProfile(profileData);
       
       if (response.success) {
         // Mettre à jour les données utilisateur localement
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
         }));
         return { success: true };
       } else {
-        throw new Error(response.message || 'Échec de mise à jour du profil');
+        throw new Error(response.error || response.message || 'Échec de mise à jour du profil');
       }
     } catch (error) {
       console.error('Erreur de mise à jour du profil:', error);
@@ -155,4 +155,10 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Hook personnalisé pour utiliser le contexte d'authentification
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth doit être utilisé avec AuthProvider');
+  }
+  return context;
+};

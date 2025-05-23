@@ -7,11 +7,13 @@ import MessageItem from './MessageItem';
 function MessageList({ messages, onPostReply }) {
   return (
     <section className="card">
-      <ul className="message-list">
-        {messages.map(message => (
+      <ul className="message-list">        {messages.map(message => (
           <MessageItem 
-            key={message.id} 
-            message={message} 
+            key={message.id || message._id} 
+            message={{
+              ...message,
+              id: message.id || message._id // Ensure message has an id
+            }}
             onPostReply={onPostReply} 
           />
         ))}

@@ -57,6 +57,9 @@
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   --gradient-secondary: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+  
+  /* Couleur RGB pour les effets */
+  --primary-rgb: 59, 130, 246; /* Couleur bleue en RGB pour les effets */
 }
 
 /* Thème sombre */

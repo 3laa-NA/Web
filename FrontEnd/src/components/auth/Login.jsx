@@ -74,10 +74,14 @@ const Login = () => {
       }
       
       // Procéder à la connexion
-      const result = await login(credentials);
-      if (!result.success) {
-        // Afficher le message retourné par l'API
-        setError(result.error || result.message || t('errors.authFailed', { ns: 'auth' }));
+      const result = await login(credentials);      if (!result.success) {
+        // Traitement spécifique pour différents types d'erreurs
+        if (result.errorCode === 'ACCOUNT_PENDING') {
+          setError(t('errors.accountPending', { ns: 'auth' }));
+        } else {
+          // Afficher le message retourné par l'API
+          setError(result.error || result.message || t('errors.authFailed', { ns: 'auth' }));
+        }
         setLoading(false);
         return;
       }
@@ -86,8 +90,7 @@ const Login = () => {
       console.error('Login error:', err);
       // Gérer les différents cas d'erreur avec des messages clairs
       if (err.isNetworkError || connectionStatus === API.connectionState.DISCONNECTED) {
-        setError(t('errors.serverUnavailable', { ns: 'auth' }));
-      } else if (err.status === 401) {
+        setError(t('errors.serverUnavailable', { ns: 'auth' }));      } else if (err.status === 401 || err.status === 403) {
         // Authentication specific errors
         if (err.code === 'INVALID_CREDENTIALS') {
           setError(t('errors.invalidCredentials', { ns: 'auth' }));
@@ -95,6 +98,9 @@ const Login = () => {
           setError(t('errors.accountLocked', { ns: 'auth' }));
         } else if (err.code === 'ACCOUNT_INACTIVE') {
           setError(t('errors.accountInactive', { ns: 'auth' }));
+        } else if (err.message && err.message.includes('attente')) {
+          // Message d'erreur spécifique pour les comptes en attente d'approbation
+          setError(t('errors.accountPending', { ns: 'auth' }));
         } else {
           setError(t('errors.authFailed', { ns: 'auth' }));
         }
@@ -131,7 +137,7 @@ const Login = () => {
       <h2>{t('loginTitle')}</h2>
       {renderConnectionStatus()}
       
-      {error && <div className="error-message">{t(error) || error}</div>}
+      {error && <div className="error-message">{t('errors.incorrectCredentials') || error}</div>}
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">

@@ -7,7 +7,7 @@ import { API } from '../../services/api';
  * Fil de messages d'une conversation privée
  * Affiche les messages échangés entre deux utilisateurs
  */
-function MessageThread({ conversationId, onSendMessage }) {
+function MessageThread({ conversationId, onSendMessage, conversations }) {
   const { t } = useTranslation('features');
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -15,8 +15,7 @@ function MessageThread({ conversationId, onSendMessage }) {
   const [error, setError] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const messageEndRef = useRef(null);
-  
-  // Chargement des messages de la conversation depuis l'API
+    // Chargement des messages de la conversation depuis l'API
   useEffect(() => {
     const fetchMessages = async () => {
       if (!conversationId) {
@@ -43,7 +42,7 @@ function MessageThread({ conversationId, onSendMessage }) {
           }));          
           setMessages(formattedMessages);
         } else {
-          throw new Error(response.message || t('privateMessages.failedToLoadMessages', { ns: 'features' }));
+          throw new Error(response.message || t('privateMessages.failedToLoadMessages'));
         }
       } catch (error) {
         console.error('Erreur lors du chargement des messages:', error);
@@ -120,7 +119,24 @@ function MessageThread({ conversationId, onSendMessage }) {
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
-  };
+  };    // Récupérer le nom de l'interlocuteur de la conversation active
+    const getConversationName = () => {
+      if (!conversationId) {
+        return '';
+      }
+      
+      // Si les conversations sont disponibles, chercher le nom de la conversation
+      if (conversations && Array.isArray(conversations)) {
+        const activeConversation = conversations.find(conv => conv.id === conversationId);
+        if (activeConversation && activeConversation.withName) {
+          return activeConversation.withName;
+        }
+      }
+      
+      // Par défaut, retourner "Conversation"
+      return t('privateMessages.conversation');
+    };
+    
     return (
     <div className="message-thread">
       {!conversationId ? (
@@ -129,6 +145,9 @@ function MessageThread({ conversationId, onSendMessage }) {
         </div>
       ) : (
         <>
+          <div className="thread-header">
+            <h3>{getConversationName()}</h3>
+          </div>
           <div className="thread-messages">
             {loading ? (
               <div className="loading-messages">{t('privateMessages.loading')}</div>

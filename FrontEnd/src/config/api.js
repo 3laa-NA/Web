@@ -22,12 +22,19 @@ export const ENDPOINTS = {
   MESSAGES: '/messages',
   MESSAGE_DETAIL: (messageId) => `/messages/${messageId}`,
   MESSAGE_LIKE: (messageId) => `/messages/${messageId}/like`,
-  MESSAGE_REPLIES: (messageId) => `/messages/${messageId}/replies`,
+  MESSAGE_REPLIES: (messageId) => `/messages/${messageId}/replies`,  MESSAGE_REPLY_LIKE: (messageId, replyId) => `/messages/${messageId}/replies/${replyId}/like`,
+  USER_MESSAGES: (userId) => `/user/messages/${userId}`,
   
   // Messages privés
   CONVERSATIONS: '/private-messages/conversations',
   CONVERSATION_DETAIL: (conversationId) => `/private-messages/conversations/${conversationId}`,
   SEND_PRIVATE_MESSAGE: '/private-messages/send',
+    // Forums
+  FORUMS: '/forums',
+  FORUM_DETAIL: (forumId) => `/forums/${forumId}`,
+  ADMIN_FORUMS: '/forums/admin/all',
+  FORUM_ACCESS: (forumId) => `/forums/${forumId}/access`,
+  FORUM_DELETE: (forumId) => `/forums/${forumId}`,
   
   // Administration
   ADMIN_USERS: '/admin/users',
@@ -35,6 +42,7 @@ export const ENDPOINTS = {
   APPROVE_USER: (userId) => `/admin/users/${userId}/approve`,
   REJECT_USER: (userId) => `/admin/users/${userId}/reject`,
   CHANGE_USER_ROLE: (userId) => `/admin/users/${userId}/role`,
+  ADMIN_SETTINGS: '/admin/settings',
   
   // Utilitaires
   TEST_CONNECTION: '/test',

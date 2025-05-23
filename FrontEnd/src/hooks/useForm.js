@@ -6,9 +6,10 @@ import { useState } from 'react';
  * 
  * @param {Object} initialValues - Valeurs initiales des champs du formulaire
  * @param {Function} validate - Fonction de validation retournant des erreurs
+ * @param {Function} submitCallback - Fonction à appeler lors de la soumission valide du formulaire
  * @returns {Object} - Objet contenant les états et gestionnaires de formulaire
  */
-export function useForm(initialValues = {}, validate) {
+export function useForm(initialValues = {}, validate, submitCallback) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,8 +29,11 @@ export function useForm(initialValues = {}, validate) {
       });
     }
   };
-  
-  const handleSubmit = async (callback) => {
+    const handleSubmit = (e) => {
+    if (e) {
+      e.preventDefault(); // Empêche le rechargement de la page
+    }
+    
     setIsSubmitting(true);
     
     if (validate) {
@@ -38,13 +42,14 @@ export function useForm(initialValues = {}, validate) {
       
       // Si pas d'erreurs, appeler le callback
       if (Object.keys(validationErrors).length === 0) {
-        await callback(values);
+        return submitCallback(); // Appel du callback externe passé au hook useForm
+      } else {
+        // S'il y a des erreurs, on arrête la soumission
+        setIsSubmitting(false);
       }
     } else {
-      await callback(values);
+      return submitCallback(); // Pas de validation, appeler directement le callback
     }
-    
-    setIsSubmitting(false);
   };
   
   return {

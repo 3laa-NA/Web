@@ -7,6 +7,7 @@ import { usersApi } from './api/users';
 import { messagesApi } from './api/messages';
 import { adminApi } from './api/admin';
 import { privateMessagesApi } from './api/privateMessages';
+import forumsApi from './api/forums';
 
 /**
  * Tester la connexion au backend
@@ -31,6 +32,9 @@ export const API = {
   messages: messagesApi,
   admin: adminApi,
   privateMessages: privateMessagesApi,
+  
+  // Forums
+  forums: forumsApi,
   
   // Connection state and management
   connectionState: CONNECTION_STATES,

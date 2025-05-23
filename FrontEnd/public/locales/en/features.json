@@ -1,9 +1,11 @@
-{  "messages": {
+{  
+    "messages": {
     "newMessage": "New message",
     "reply": "Reply",
-    "replyTo": "Reply to",
-    "like": "Like",
+    "replyTo": "Reply to",    "like": "Like",
+    "unlike": "Unlike",
     "share": "Share",
+    "copied": "Copied!",
     "writeSomething": "Write something...",
     "writeReply": "Write your reply...",
     "replyText": "Reply text",
@@ -20,10 +22,20 @@
     "unexpectedError": "An unexpected error occurred",
     "connectionError": "Connection error occurred",
     "loading": "Loading messages...",
+    "newPost": "New message",
+    "unknownUser": "Unknown user",
     "error": {
-      "empty": "Message cannot be empty"
-    }
+      "empty": "Message cannot be empty",
+      "failed": "Failed to send message",
+      "loading": "Error loading messages",
+      "unexpected": "An unexpected error occurred",
+      "unauthorized": "Unauthorized access to this forum",
+      "invalidForum": "Select a forum to post in",
+      "selectForum": "Please select a forum"
+    },    "posting": "Sending...",
+    "welcome": "Welcome to Organiz'Asso!"
   },
+
   "profile": {
     "updateProfile": "Update Profile",
     "changePassword": "Change Password",
@@ -43,7 +55,11 @@
     "failedToLoadMessages": "Failed to load messages",
     "connectionError": "Connection error",
     "profileUpdateFailed": "Failed to update profile",
-    "avatarAlt": "{{name}}'s avatar"
+    "avatarAlt": "{{name}}'s avatar",
+    "adminBadge": "Administrator",    "memberSince": "Member since {{date}}",
+    "publicMessages": "Public messages",
+    "noBio": "No biography set",
+    "publicProfile": "Public profile"
   },
   
   "admin": {
@@ -55,10 +71,14 @@
     "roleModerator": "Moderator",
     "roleAdmin": "Administrator"
   },
+
   "privateMessages": {
     "privateMessages": "Private Messages",
+    "inbox": "Inbox",
+    "myConversations": "My conversations",
     "searchConversations": "Search conversations...",
     "clearSearch": "Clear search",
+    "conversation": "Conversation",
     "selectConversation": "Select a conversation to start messaging",
     "failedToLoadConversations": "Failed to load conversations",
     "connectionError": "Connection error",
@@ -70,6 +90,44 @@
     "loading": "Loading messages...",
     "failedToLoadMessages": "Failed to load messages",
     "sending": "Message sending...",
-    "sendError": "Error sending message"
+    "sendError": "Error sending message",
+    "contacts": "Contacts",
+    "searchUserPlaceholder": "Name, surname or login",
+    "newConversation": "New Conversation",
+    "searchUser": "Search for a user",
+    "cancel": "Cancel",
+    "new": "New",
+    "writeMessage": "Write a message",
+    "searching": "Searching...",
+    "noUsersFound": "No users found",
+    "emptyMessage": "Please enter a message",
+    "startConversationError": "Error creating conversation"
+  },
+
+  "navigation": {
+    "forums": "Forums",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+
+  "forums": {
+    "public": "Public Forum",
+    "private": "Admin Forum",
+    "create": {
+      "button": "New forum",
+      "hint": "Create a new forum",
+      "title": "Create a new forum",
+      "name": "Forum name",
+      "namePlaceholder": "Enter forum name",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the purpose of this forum",
+      "isPublic": "Public forum",
+      "submit": "Create"
+    },    "errors": {
+      "invalid": "Invalid forum",
+      "notFound": "Forum not found",
+      "unauthorized": "Unauthorized access"
+    },
+    "selectForum": "Please select a forum"
   }
 }

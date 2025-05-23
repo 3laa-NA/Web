@@ -8,8 +8,7 @@ function Header({ onSearch, onDateFilter, user }) {
   const { t } = useTranslation('common');
   const userName = user ? (user.login || `${user.firstName || ''} ${user.lastName || ''}`.trim()) : t('defaultUser', { defaultValue: 'utilisateur' });
   return (
-    <header className="dashboard-header">
-      <div className="logo">
+    <header className="dashboard-header">      <div className="logo">
         <h1>{t('navigation.dashboard')} <span className="dashboard-badge">📊</span></h1>
         <p>{t('welcome')}, <span className="username-highlight">{userName}</span>!</p>
       </div>

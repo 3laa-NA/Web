@@ -12,18 +12,30 @@ export const API_DOMAIN = new URL(API_BASE_URL).origin;
 
 // Fonction utilitaire de traitement des réponses
 export const processResponse = (response, data) => {
+  // Pour faciliter le débogage
+  console.log(`Traitement réponse API ${response.config?.url}:`, {
+    status: response.status,
+    success: response.status >= 200 && response.status < 300,
+    data: data
+  });
+
   if (response.status >= 200 && response.status < 300) {
+    // Conserver la structure originale de la réponse pour compatibilité
     return {
-      success: true,
-      data,
+      ...data,
+      success: data.success !== undefined ? data.success : true,
       error: null
     };
   }
   
+  // En cas d'erreur, préserver plus d'informations
   return {
     success: false,
     data: null,
-    error: data?.message || 'Request failed'
+    error: data?.message || 'Request failed',
+    message: data?.message || 'Une erreur est survenue',
+    code: data?.code || `HTTP_${response.status}`,
+    status: response.status
   };
 };
 

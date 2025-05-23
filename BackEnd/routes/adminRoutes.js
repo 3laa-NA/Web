@@ -250,4 +250,111 @@ router.put('/settings', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+/**
+ * POST /api/admin/users/:userId/deactivate
+ * Désactive un compte utilisateur
+ */
+router.post('/users/:userId/deactivate', requireAuth, async (req, res) => {
+  try {
+    // Vérifier que l'utilisateur est admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès non autorisé'
+      });
+    }
+
+    const userId = req.params.userId;
+    
+    // Vérifier qu'un administrateur ne peut pas se désactiver lui-même
+    if (userId === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Un administrateur ne peut pas désactiver son propre compte'
+      });
+    }
+
+    const usersCollection = await getCollection('users');
+    
+    // Vérifier que l'utilisateur existe et est actif
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé'
+      });
+    }
+
+    if (user.role === 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'Impossible de désactiver un autre administrateur'
+      });
+    }
+
+    // Mettre à jour le statut de l'utilisateur
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { 
+        status: 'inactive',
+        updatedAt: new Date()
+      }}
+    );
+
+    if (!result.matchedCount) {
+      return res.status(404).json({
+        success: false,
+        message: 'Utilisateur non trouvé'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Utilisateur désactivé avec succès'
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la désactivation de l\'utilisateur:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la désactivation de l\'utilisateur'
+    });
+  }
+});
+
+/**
+ * Change le statut d'un utilisateur (active/inactive)
+ * @route PUT /api/admin/users/:userId/status
+ */
+router.put('/users/:userId/status', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { status } = req.body;
+
+    if (!['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Valeur de statut invalide' });
+    }
+
+    const usersCollection = await getCollection('users');
+    
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { status } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+    }
+
+    res.json({
+      success: true,
+      message: `Statut de l'utilisateur changé en ${status}`
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du statut de l\'utilisateur:', error);
+    res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour du statut de l\'utilisateur' });
+  }
+});
+
 module.exports = router;
