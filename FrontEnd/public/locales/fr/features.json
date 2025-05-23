@@ -59,7 +59,8 @@
     "adminBadge": "Administrateur",    "memberSince": "Membre depuis {{date}}",
     "publicMessages": "Messages publics",
     "noBio": "Aucune biographie définie",
-    "publicProfile": "Profil public"
+    "publicProfile": "Profil public",
+    "noPublicMessages": "Aucun message public trouvé"
   },
   
   "admin": {

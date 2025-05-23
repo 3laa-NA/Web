@@ -1,0 +1,166 @@
+{
+	"info": {
+		"_postman_id": "decb4e17-6986-4dda-b2c7-be214466b798",
+		"name": "OrganizAsso API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45252799",
+		"_collection_link": "https://21212730.postman.co/workspace/21212730's-Workspace~ee208d3d-a6ff-4b15-8d1f-8103250086aa/collection/45252799-decb4e17-6986-4dda-b2c7-be214466b798?action=share&source=collection_link&creator=45252799"
+	},
+	"item": [
+		{
+			"name": "Connexion utilisateur",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"login\": \"admin\",\r\n  \"password\": \"admin123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Récupérer_profil_utilisateur_connecté",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Modifier profil",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODMwYTA1NTZhNDc1Zjg1OGM0NmRhZDIiLCJsb2dpbiI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzQ4MDI2MzI2LCJleHAiOjE3NDgwMjcyMjZ9.54Iypp9WgudkBYtnk0qBiaisKFwbMrU856gpf93UoS0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"firstName\": \"Jean\",\r\n  \"lastName\": \"Dupont\",\r\n  \"email\": \"jean.dupont@example.com\",\r\n  \"bio\": \"Développeur back-end passionné\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/user/profile",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"user",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Envoyer message",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODMwYTA1NTZhNDc1Zjg1OGM0NmRhZDIiLCJsb2dpbiI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzQ4MDI4MzQyLCJleHAiOjE3NDgwMjkyNDJ9.Y5KQV6E4wjeBzXiqtR3fUFQF2g11C8G7t8CFxkewE_U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"text\": \"Ceci est un message de test\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/messages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Liste messages",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODMwYTA1NTZhNDc1Zjg1OGM0NmRhZDIiLCJsb2dpbiI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzQ4MDI4MzQyLCJleHAiOjE3NDgwMjkyNDJ9.Y5KQV6E4wjeBzXiqtR3fUFQF2g11C8G7t8CFxkewE_U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/messages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API Test",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

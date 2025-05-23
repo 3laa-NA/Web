@@ -130,7 +130,7 @@
 .admin-panel .btn-approve {
   background-color: var(--success);
   color: white;
-  margin-right: 0.5rem;
+  margin-right: 1rem;
 }
 
 .admin-panel .btn-reject {

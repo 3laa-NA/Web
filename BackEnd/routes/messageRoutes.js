@@ -11,14 +11,29 @@ const { requireAuth } = require('../middleware/auth');
 
 /**
  * GET /api/messages
- * Récupération de tous les messages
+ * Récupération des messages avec filtrage optionnel par forum
  */
 router.get('/', async (req, res) => {
   try {
+    const { forumId } = req.query;
     const messagesCollection = await getCollection('messages');
     
+    // Construire la requête de filtrage
+    let query = {};
+    
+    // Si un forumId est fourni, filtrer par ce forum
+    if (forumId) {
+      if (!ObjectId.isValid(forumId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID de forum invalide'
+        });
+      }
+      query.forumId = new ObjectId(forumId);
+    }
+    
     const messages = await messagesCollection
-      .find({})
+      .find(query)
       .sort({ createdAt: -1 })
       .toArray();
     
@@ -41,7 +56,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, forumId } = req.body;
     
     if (!text || typeof text !== 'string' || text.trim() === '') {
       return res.status(400).json({
@@ -50,14 +65,38 @@ router.post('/', requireAuth, async (req, res) => {
       });
     }
     
-    const messagesCollection = await getCollection('messages');
+    if (!forumId || !ObjectId.isValid(forumId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de forum requis et valide'
+      });
+    }
     
-    const newMessage = {
-      userId: req.user.id,
+    // Vérifier que le forum existe
+    const forumsCollection = await getCollection('forums');
+    const forum = await forumsCollection.findOne({ _id: new ObjectId(forumId) });
+    
+    if (!forum) {
+      return res.status(404).json({
+        success: false,
+        message: 'Forum non trouvé'
+      });
+    }
+    
+    // Vérifier si l'utilisateur a accès au forum
+    if (!forum.isPublic && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Accès non autorisé à ce forum'
+      });
+    }
+      const messagesCollection = await getCollection('messages');    const newMessage = {
+      userId: new ObjectId(req.user.id), // Stocker comme ObjectId pour la cohérence
       user: `${req.user.firstName} ${req.user.lastName}`,
       login: req.user.login,
       avatar: req.user.firstName.charAt(0) + req.user.lastName.charAt(0),
       text: text.trim(),
+      forumId: new ObjectId(forumId),
       createdAt: new Date(),
       likes: [],
       replies: []
@@ -157,11 +196,9 @@ router.post('/:messageId/replies', requireAuth, async (req, res) => {
         success: false,
         message: 'Message non trouvé'
       });
-    }
-    
-    const newReply = {
+    }    const newReply = {
       id: new ObjectId().toString(),
-      userId: req.user.id,
+      userId: new ObjectId(req.user.id), // Stocker comme ObjectId pour la cohérence
       user: `${req.user.firstName} ${req.user.lastName}`,
       login: req.user.login,
       avatar: req.user.firstName.charAt(0) + req.user.lastName.charAt(0),
@@ -203,10 +240,9 @@ router.post('/:messageId/like', requireAuth, async (req, res) => {
         success: false,
         message: 'ID de message invalide'
       });
-    }
-    
-    const messagesCollection = await getCollection('messages');
-    const userId = req.user.id;
+    }    const messagesCollection = await getCollection('messages');
+    const userId = req.user.id; // Utiliser l'ID comme string
+    const userObjectId = new ObjectId(userId); // Aussi préparer la version ObjectId pour les anciens likes
     
     const message = await messagesCollection.findOne({
       _id: new ObjectId(messageId)
@@ -218,23 +254,28 @@ router.post('/:messageId/like', requireAuth, async (req, res) => {
         message: 'Message non trouvé'
       });
     }
-    
-    // Vérifier si l'utilisateur a déjà liké ce message
-    const alreadyLiked = message.likes && message.likes.includes(userId);
+      // Vérifier si l'utilisateur a déjà liké ce message (chercher dans les deux formats)
+    const alreadyLiked = message.likes && (
+      message.likes.includes(userId) || 
+      message.likes.some(like => like instanceof ObjectId && like.toString() === userId)
+    );
     
     let operation;
     let actionMessage;
     
     if (alreadyLiked) {
-      // Supprimer le like
+      // Supprimer le like (dans les deux formats possibles)
       operation = {
-        $pull: { likes: userId }
+        $pull: { 
+          likes: { 
+            $in: [userId, userObjectId] 
+          } 
+        }
       };
       actionMessage = 'Like supprimé avec succès';
-    } else {
-      // Ajouter le like
+    } else {    // Ajouter le like (maintenant comme ObjectId pour la cohérence)
       operation = {
-        $addToSet: { likes: userId }
+        $addToSet: { likes: new ObjectId(userId) }
       };
       actionMessage = 'Like ajouté avec succès';
     }
@@ -290,8 +331,7 @@ router.put('/:messageId', requireAuth, async (req, res) => {
     }
     
     const messagesCollection = await getCollection('messages');
-    
-    // Vérifier que l'utilisateur est le propriétaire du message
+      // Vérifier que l'utilisateur est le propriétaire du message
     const message = await messagesCollection.findOne({
       _id: new ObjectId(messageId)
     });
@@ -302,9 +342,9 @@ router.put('/:messageId', requireAuth, async (req, res) => {
         message: 'Message non trouvé',
         code: 'NOT_FOUND'
       });
-    }
-    
-    if (message.userId !== req.user.id) {
+    }    // Gérer les deux formats possibles de userId (string legacy et ObjectId nouveau)
+    const messageUserId = message.userId ? message.userId.toString() : null;
+    if (messageUserId !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Vous n\'êtes pas autorisé à modifier ce message',
@@ -367,9 +407,7 @@ router.delete('/:messageId', requireAuth, async (req, res) => {
       });
     }
     
-    const messagesCollection = await getCollection('messages');
-    
-    // Vérifier que l'utilisateur est le propriétaire du message ou un administrateur
+    const messagesCollection = await getCollection('messages');      // Vérifier que l'utilisateur est le propriétaire du message ou un administrateur
     const message = await messagesCollection.findOne({
       _id: new ObjectId(messageId)
     });
@@ -381,8 +419,9 @@ router.delete('/:messageId', requireAuth, async (req, res) => {
         code: 'NOT_FOUND'
       });
     }
-    
-    if (message.userId !== req.user.id && req.user.role !== 'admin') {
+      // Gérer les deux formats possibles de userId (string legacy et ObjectId nouveau)
+    const messageUserId = message.userId ? message.userId.toString() : null;
+    if (messageUserId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Vous n\'êtes pas autorisé à supprimer ce message',
@@ -430,10 +469,9 @@ router.post('/:messageId/replies/:replyId/like', requireAuth, async (req, res) =
         success: false,
         message: 'ID de message invalide'
       });
-    }
-    
-    const messagesCollection = await getCollection('messages');
-    const userId = req.user.id;
+    }    const messagesCollection = await getCollection('messages');
+    const userId = req.user.id; // Utiliser l'ID comme string
+    const userObjectId = new ObjectId(userId); // Aussi préparer la version ObjectId pour les anciens likes
     
     // Find the parent message
     const message = await messagesCollection.findOne({
@@ -456,24 +494,29 @@ router.post('/:messageId/replies/:replyId/like', requireAuth, async (req, res) =
         message: 'Réponse non trouvée'
       });
     }
-    
-    // Vérifier si l'utilisateur a déjà liké cette réponse
+      // Vérifier si l'utilisateur a déjà liké cette réponse (chercher dans les deux formats)
     const reply = message.replies[replyIndex];
-    const alreadyLiked = reply.likes && reply.likes.includes(userId);
+    const alreadyLiked = reply.likes && (
+      reply.likes.includes(userId) || 
+      reply.likes.some(like => like instanceof ObjectId && like.toString() === userId)
+    );
     
     let operation;
     let actionMessage;
     
     if (alreadyLiked) {
-      // Supprimer le like
+      // Supprimer le like (dans les deux formats possibles)
       operation = {
-        $pull: { [`replies.${replyIndex}.likes`]: userId }
+        $pull: { 
+          [`replies.${replyIndex}.likes`]: { 
+            $in: [userId, userObjectId] 
+          } 
+        }
       };
       actionMessage = 'Like supprimé avec succès';
-    } else {
-      // Ajouter le like
+    } else {    // Ajouter le like (maintenant comme ObjectId pour la cohérence)
       operation = {
-        $addToSet: { [`replies.${replyIndex}.likes`]: userId }
+        $addToSet: { [`replies.${replyIndex}.likes`]: new ObjectId(userId) }
       };
       actionMessage = 'Like ajouté avec succès';
     }

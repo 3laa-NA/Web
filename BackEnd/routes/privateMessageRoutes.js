@@ -63,8 +63,7 @@ router.get('/conversations', requireAuth, async (req, res) => {
       console.error('Erreur lors de la recherche des conversations:', error);
       conversations = [];
     }
-    
-    console.log('Found conversations:', conversations.length, conversations);
+      console.log('Conversations trouvées:', conversations.length, conversations);
       // Formater les données pour le frontend
     const formattedConversations = await Promise.all(conversations.map(async (conv) => {      // Trouver l'autre participant (dans une conversation à 2)
       // Convertir tous les IDs en strings pour comparaison cohérente
@@ -152,7 +151,7 @@ router.get('/conversations/:conversationId', requireAuth, async (req, res) => {
     }
     
     const userId = req.user.id || (req.user._id ? req.user._id.toString() : null);
-    console.log('Using userId for conversation access:', userId);
+    console.log('Utilisation de userId pour accès à la conversation:', userId);
     
     if (!ObjectId.isValid(conversationId)) {
       return res.status(400).json({
@@ -163,7 +162,7 @@ router.get('/conversations/:conversationId', requireAuth, async (req, res) => {
     
     // Vérifier que l'utilisateur fait partie de cette conversation
     const conversationsCollection = await getCollection('conversations');
-    console.log('Checking access for conversation:', conversationId, 'with userId:', userId);
+    console.log('Vérification d\'accès pour la conversation:', conversationId, 'avec userId:', userId);
     
     // Essayons de trouver la conversation avec différentes formes d'ID utilisateur
     let conversation = await conversationsCollection.findOne({
@@ -180,7 +179,7 @@ router.get('/conversations/:conversationId', requireAuth, async (req, res) => {
     }
     
     if (!conversation) {
-      console.log('Access denied to conversation:', conversationId, 'for user:', userId);
+      console.log('Accès refusé à la conversation:', conversationId, 'pour utilisateur:', userId);
       return res.status(403).json({
         success: false,
         message: 'Accès refusé à cette conversation'
@@ -208,9 +207,8 @@ router.get('/conversations/:conversationId', requireAuth, async (req, res) => {
               ] 
             } 
           } 
-        }
-      );
-      console.log('Conversation marked as read');
+        }      );
+      console.log('Conversation marquée comme lue');
     }
     
     res.json({
@@ -281,13 +279,12 @@ router.post('/send', requireAuth, async (req, res) => {
             }
           }
         }
-      }
-    } catch (error) {
-      console.error('Error looking up recipient:', error);
+      }    } catch (error) {
+      console.error('Erreur lors de la recherche du destinataire:', error);
     }
     
     if (!recipientUser) {
-      console.error('Recipient not found for ID:', recipientId);
+      console.error('Destinataire introuvable pour ID:', recipientId);
       return res.status(404).json({
         success: false,
         message: 'Destinataire introuvable'
@@ -295,7 +292,7 @@ router.post('/send', requireAuth, async (req, res) => {
     }
     
     const recipient = recipientUser._id.toString();
-    console.log('Found recipient:', recipient);
+    console.log('Destinataire trouvé:', recipient);
       // Rechercher la conversation existante
     const conversationsCollection = await getCollection('conversations');
     let conversation;
@@ -311,9 +308,8 @@ router.post('/send', requireAuth, async (req, res) => {
         const participantIds = conversation.participants.map(p => 
           ObjectId.isValid(p) ? p.toString() : p
         );
-        
-        if (!participantIds.includes(senderId.toString())) {
-          console.error('User', senderId, 'not in conversation', conversationId);
+          if (!participantIds.includes(senderId.toString())) {
+          console.error('Utilisateur', senderId, 'absent de la conversation', conversationId);
           return res.status(403).json({
             success: false,
             message: 'Accès refusé à cette conversation'
@@ -344,7 +340,7 @@ router.post('/send', requireAuth, async (req, res) => {
       
       console.log('Conversation existante trouvée:', conversation ? 'Oui' : 'Non');
     }const now = new Date();
-    console.log('Creating/updating conversation between:', senderId, 'and', recipient);    // Si la conversation n'existe pas, en créer une
+    console.log('Création/mise à jour de la conversation entre:', senderId, 'et', recipient);    // Si la conversation n'existe pas, en créer une
     if (!conversation) {
       // Convertir les IDs en strings pour assurer la cohérence
       const participantIds = [senderId.toString(), recipient.toString()];
@@ -382,7 +378,7 @@ router.post('/send', requireAuth, async (req, res) => {
           $addToSet: { unreadBy: recipient }
         }
       );
-      console.log('Conversation updated:', updateResult.modifiedCount, 'document(s)');
+      console.log('Conversation mise à jour:', updateResult.modifiedCount, 'document(s)');
     }
     
     // Créer le message
@@ -429,7 +425,7 @@ router.post('/conversations/:conversationId/read', requireAuth, async (req, res)
     }
     
     const userId = req.user.id || (req.user._id ? req.user._id.toString() : null);
-    console.log('Using userId for marking conversation as read:', userId);
+    console.log('Utilisation de userId pour marquer la conversation comme lue:', userId);
     
     if (!ObjectId.isValid(conversationId)) {
       return res.status(400).json({
@@ -481,7 +477,7 @@ router.post('/conversations/:conversationId/read', requireAuth, async (req, res)
         } 
       }
     );
-    console.log('Conversation marked as read, result:', result.modifiedCount);
+    console.log('Conversation marquée comme lue, résultat:', result.modifiedCount);
     
     res.json({
       success: true,

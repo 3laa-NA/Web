@@ -388,17 +388,16 @@ function AdminPanel() {
             {pendingUsers.map(user => (
               <tr key={user._id}>
                 <td>{user.firstName} {user.lastName}</td>
-                <td>{user.email || '-'}</td>
-                <td>
+                <td>{user.email || '-'}</td>                <td>
                   <button
                     onClick={() => handleApproveUser(user._id)}
-                    className="btn btn-success btn-sm"
+                    className="btn btn-success btn-sm btn-approve"
                   >
                     {t('approve', { ns: 'admin' })}
                   </button>
                   <button
                     onClick={() => handleRejectUser(user._id)}
-                    className="btn btn-danger btn-sm"
+                    className="btn btn-danger btn-sm btn-reject"
                   >
                     {t('reject', { ns: 'admin' })}
                   </button>

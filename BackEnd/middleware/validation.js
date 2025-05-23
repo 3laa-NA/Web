@@ -9,13 +9,17 @@ const { getCollection } = require('../utils/dbConnection');
 
 /**
  * Vérifie les résultats de validation et renvoie une erreur si nécessaire
+ * @param {Object} req - Requête Express
+ * @param {Object} res - Réponse Express
+ * @param {Function} next - Fonction Express next
+ * @returns {Object|undefined} Erreur de validation ou passe au middleware suivant
  */
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: 'Validation failed',
+      message: 'Échec de validation',
       errors: errors.array()
     });
   }

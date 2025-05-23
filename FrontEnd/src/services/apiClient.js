@@ -18,7 +18,6 @@ export const processResponse = (response, data) => {
     success: response.status >= 200 && response.status < 300,
     data: data
   });
-
   if (response.status >= 200 && response.status < 300) {
     // Conserver la structure originale de la réponse pour compatibilité
     return {
@@ -27,12 +26,11 @@ export const processResponse = (response, data) => {
       error: null
     };
   }
-  
-  // En cas d'erreur, préserver plus d'informations
+    // En cas d'erreur, préserver plus d'informations pour faciliter le débogage
   return {
     success: false,
     data: null,
-    error: data?.message || 'Request failed',
+    error: data?.message || 'Requête échouée',
     message: data?.message || 'Une erreur est survenue',
     code: data?.code || `HTTP_${response.status}`,
     status: response.status
@@ -44,7 +42,7 @@ export const tokenManager = {
   // Récupérer le token d'accès (principal pour les requêtes API)
   getToken: () => {
     try {
-      // Try localStorage first
+      // Essayer d'abord localStorage
       let token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       
       // Si absent de localStorage, essayer sessionStorage en secours
@@ -54,7 +52,7 @@ export const tokenManager = {
       
       // Validation basique du format du token – sans le supprimer automatiquement
       if (token && (!token.includes('.') || token.split('.').length !== 3)) {
-        console.warn('Potentially invalid token format, but keeping it:', 
+        console.warn('Format de token potentiellement invalide, mais conservé:', 
           token.substring(0, 15) + '...');
       }      return token;
     } catch (error) {
@@ -63,10 +61,10 @@ export const tokenManager = {
     }
   },
   
-  // Get the refresh token (used to get a new access token)
+  // Récupérer le token de rafraîchissement (utilisé pour obtenir un nouveau token d'accès)
   getRefreshToken: () => {
     try {
-      // Try localStorage first
+      // Essayer d'abord localStorage
       let token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
       // Si absent de localStorage, essayer sessionStorage en secours
@@ -79,18 +77,16 @@ export const tokenManager = {
       return null;
     }
   },
-    setToken: (accessToken, refreshToken) => {    try {
-      // Basic validation before saving
+    setToken: (accessToken, refreshToken) => {    try {      // Validation basique avant l'enregistrement
       if (!accessToken || typeof accessToken !== 'string') {
         console.error('Token d\'accès invalide fourni à setToken:', accessToken);
         return false;
       }
       
-      // Store access token in both localStorage and sessionStorage for redundancy
+      // Enregistrer le token d'accès dans localStorage et sessionStorage pour redondance
       localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
       sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-      
-      // Store refresh token if provided
+        // Enregistrer le token de rafraîchissement s'il est fourni
       if (refreshToken && typeof refreshToken === 'string') {
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
         sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
@@ -108,10 +104,9 @@ export const tokenManager = {
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   },
-  
-  getUser: () => {
+    getUser: () => {
     try {
-      // Try localStorage first
+      // Essayer d'abord localStorage
       let userJson = localStorage.getItem(STORAGE_KEYS.USER);
       
       // Si absent de localStorage, essayer sessionStorage en secours
@@ -208,10 +203,9 @@ const refreshAuthToken = async () => {
     const currentRefreshToken = tokenManager.getRefreshToken();
     
     if (!currentRefreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error('Aucun token de rafraîchissement disponible');
     }
-    
-    // Create a new axios instance for refresh to avoid interceptor loop
+      // Créer une nouvelle instance axios pour le rafraîchissement afin d'éviter une boucle d'intercepteur
     const refreshClient = axios.create({
       baseURL: API_BASE_URL,
       timeout: API_TIMEOUT,
@@ -223,18 +217,17 @@ const refreshAuthToken = async () => {
         Authorization: `Bearer ${currentRefreshToken}`
       }
     });
-    
-    if (data.success && data.accessToken) {
-      // Save the new tokens
+      if (data.success && data.accessToken) {
+      // Enregistrer les nouveaux tokens
       tokenManager.setToken(data.accessToken, data.refreshToken || currentRefreshToken);
       
-      // Notify subscribers
+      // Notifier les abonnés
       onTokenRefreshed(data.accessToken);
       
       return data.accessToken;
     } else {
-      throw new Error('Failed to refresh token');
-    }  } catch (error) {
+      throw new Error('Échec du rafraîchissement du token');
+    }} catch (error) {
     // On failure, clear tokens and force logout
     console.error('Échec du rafraîchissement du token:', error);
     tokenManager.removeToken();
@@ -246,34 +239,33 @@ const refreshAuthToken = async () => {
   }
 };
 
-// Create the axios instance with base configuration
+// Créer l'instance axios avec la configuration de base
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
   ...DEFAULT_OPTIONS
 });
 
-// Request interceptor for authentication
+// Intercepteur de requête pour l'authentification
 apiClient.interceptors.request.use(
   (config) => {
     try {
       const token = tokenManager.getToken();
         if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        // Only log in development environment
+        // Journal uniquement en environnement de développement
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Added auth token to ${config.url}`);
+          console.log(`Token d'authentification ajouté à ${config.url}`);
         }
       } else {
-        // Only log in development environment
+        // Journal uniquement en environnement de développement
         if (process.env.NODE_ENV === 'development') {
-          console.log(`No auth token available for ${config.url}`);
+          console.log(`Aucun token d'authentification disponible pour ${config.url}`);
         }
-        
-        // Check if we should have a token (user logged in but token missing)
+          // Vérifier si nous devrions avoir un token (utilisateur connecté mais token manquant)
         const user = tokenManager.getUser();
         if (user) {
-          console.warn('User data exists but no token found - inconsistent state');
+          console.warn('Les données utilisateur existent mais aucun token trouvé - état incohérent');
         }
       }    } catch (error) {
       console.error('Erreur dans l\'intercepteur de requête:', error);
@@ -283,61 +275,57 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling and token refresh
+// Intercepteur de réponse pour la gestion des erreurs et le rafraîchissement du token
 apiClient.interceptors.response.use(
   (response) => {
-    // Update connection state when we get a response
+    // Mettre à jour l'état de connexion lorsque nous obtenons une réponse
     updateConnectionState(CONNECTION_STATES.CONNECTED);
     return {
       response,
       data: response.data
     };
-  },
-  async (error) => {
-    // Check if error is due to expired token (401 Unauthorized)
+  },  async (error) => {
+    // Vérifier si l'erreur est due à un token expiré (401 Non autorisé)
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Check the error message to determine if it's a token issue
+      // Vérifier le message d'erreur pour déterminer s'il s'agit d'un problème de token
       const isTokenError = error.response.data?.code === 'INVALID_TOKEN' || 
                           error.response.data?.message?.toLowerCase().includes('token');
       
       if (isTokenError && tokenManager.getRefreshToken()) {
         originalRequest._retry = true;
-        
-        try {          // Try to refresh the token
+          try {          // Essayer de rafraîchir le token
           const newAccessToken = await refreshAuthToken();
           
-          // Update the authorization header with new token
+          // Mettre à jour l'en-tête d'autorisation avec le nouveau token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           
-          // Retry the original request
+          // Réessayer la requête originale
           return apiClient(originalRequest);
         } catch (refreshError) {
-          // If refresh fails, propagate the error
+          // Si le rafraîchissement échoue, propager l'erreur
           return Promise.reject(refreshError);
         }
       }
     }
-    
-    // Handle network errors
+      // Gérer les erreurs réseau
     if (!error.response) {
       updateConnectionState(CONNECTION_STATES.DISCONNECTED);
-      console.warn('Network error occurred, but not clearing session');
+      console.warn('Erreur réseau survenue, mais la session n\'est pas effacée');
       return Promise.reject({ 
         message: 'Serveur inaccessible', 
         originalError: error, 
         isNetworkError: true
       });
-    }    // Handle HTTP error responses
+    }    // Gérer les réponses d'erreur HTTP
     updateConnectionState(CONNECTION_STATES.CONNECTED);
-    
-    // Process data for consistent error format
+      // Traiter les données pour un format d'erreur cohérent
     const errorObject = {
       response: error.response,
       status: error.response.status,
       data: error.response?.data,
-      message: error.response?.data?.message || 'An error occurred'
+      message: error.response?.data?.message || 'Une erreur est survenue'
     };
 
     return Promise.reject(errorObject);

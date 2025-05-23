@@ -40,28 +40,27 @@ class ApiError extends Error {
     this.timestamp = new Date().toISOString();
     Error.captureStackTrace(this, this.constructor);
   }
-  
-  static badRequest(message = 'Bad Request', code = ErrorCodes.VALIDATION_ERROR, details = null) {
+    static badRequest(message = 'Requête invalide', code = ErrorCodes.VALIDATION_ERROR, details = null) {
     return new ApiError(code, message, 400, details);
   }
   
-  static unauthorized(message = 'Unauthorized', code = ErrorCodes.UNAUTHORIZED) {
+  static unauthorized(message = 'Non autorisé', code = ErrorCodes.UNAUTHORIZED) {
     return new ApiError(code, message, 401);
   }
   
-  static forbidden(message = 'Forbidden', code = ErrorCodes.INSUFFICIENT_PERMISSIONS) {
+  static forbidden(message = 'Accès interdit', code = ErrorCodes.INSUFFICIENT_PERMISSIONS) {
     return new ApiError(code, message, 403);
   }
   
-  static notFound(message = 'Resource not found', code = null) {
+  static notFound(message = 'Ressource non trouvée', code = null) {
     return new ApiError(code, message, 404);
   }
   
-  static internal(message = 'Internal Server Error', code = ErrorCodes.SERVER_ERROR, details = null) {
+  static internal(message = 'Erreur interne du serveur', code = ErrorCodes.SERVER_ERROR, details = null) {
     return new ApiError(code, message, 500, details);
   }
   
-  static database(message = 'Database Error', details = null) {
+  static database(message = 'Erreur de base de données', details = null) {
     return new ApiError(ErrorCodes.DATABASE_ERROR, message, 500, details);
   }
 }
@@ -86,13 +85,12 @@ const errorHandler = (err, req, res, next) => {
     console.error(`API Error [${err.code}]: ${err.message}`);
     return res.status(err.statusCode).json(response);
   }
-  
-  // Erreur non gérée
-  console.error('Unhandled Error:', err);
+    // Erreur non gérée
+  console.error('Erreur non gérée:', err);
   
   const response = {
     success: false,
-    message: 'Internal Server Error',
+    message: 'Erreur interne du serveur',
     code: ErrorCodes.SERVER_ERROR,
     statusCode: 500
   };

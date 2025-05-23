@@ -1,5 +1,6 @@
 /**
  * Service API principal qui intègre tous les modules API
+ * Centralise l'accès aux différentes fonctionnalités du backend
  */
 import { apiClient, API_DOMAIN, API_BASE_URL, tokenManager, CONNECTION_STATES, subscribeToConnectionState } from './apiClient';
 import { authApi } from './api/auth';
@@ -10,14 +11,15 @@ import { privateMessagesApi } from './api/privateMessages';
 import forumsApi from './api/forums';
 
 /**
- * Tester la connexion au backend
+ * Teste la connexion au backend
+ * @returns {Promise<boolean>} Vrai si la connexion est établie, faux sinon
  */
 async function testConnection() {
   try {
     const { response } = await apiClient.get('/test', { timeout: 5000 });
     return response.status >= 200 && response.status < 300;
   } catch (error) {
-    console.error('Connection test failed:', error);
+    console.error('Échec du test de connexion:', error);
     return false;
   }
 }

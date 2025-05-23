@@ -1,13 +1,13 @@
 /**
- * Centralized error handling utilities
- * Provides consistent error handling across the application
+ * Utilitaires de gestion d'erreurs centralisés
+ * Fournit une gestion d'erreurs cohérente dans toute l'application
  */
 
 /**
- * Formats and logs an error to console with additional context information
- * @param {Error|string} error - The error object or message
- * @param {string} context - The component or function context where error occurred
- * @param {Object} additionalInfo - Any additional information useful for debugging
+ * Formate et journalise une erreur dans la console avec des informations contextuelles
+ * @param {Error|string} error - L'objet ou le message d'erreur
+ * @param {string} context - Le composant ou la fonction où l'erreur s'est produite
+ * @param {Object} additionalInfo - Informations supplémentaires utiles pour le débogage
  */
 export const logError = (error, context = 'Application', additionalInfo = {}) => {
   const errorMessage = error instanceof Error ? error.message : error;
@@ -23,61 +23,57 @@ export const logError = (error, context = 'Application', additionalInfo = {}) =>
 };
 
 /**
- * Extracts a user-friendly error message from different error formats
- * @param {Error|Object|string} error - The error object
- * @param {string} fallbackMessage - Default message if no useful message can be extracted
- * @returns {string} A user-friendly error message
+ * Extrait un message d'erreur convivial à partir de différents formats d'erreur
+ * @param {Error|Object|string} error - L'objet d'erreur
+ * @param {string} fallbackMessage - Message par défaut si aucun message utile ne peut être extrait
+ * @returns {string} Un message d'erreur convivial pour l'utilisateur
  */
 export const getErrorMessage = (error, fallbackMessage = 'Une erreur inattendue s\'est produite') => {
   if (!error) return fallbackMessage;
-  
-  // Handle string errors
+    // Gérer les erreurs sous forme de chaînes de caractères
   if (typeof error === 'string') return error;
   
-  // Handle Error objects
+  // Gérer les objets Error
   if (error instanceof Error) return error.message;
   
-  // Handle API error responses
+  // Gérer les réponses d'erreur API
   if (error.message) return error.message;
   if (error.data?.message) return error.data.message;
   if (error.response?.data?.message) return error.response.data.message;
   
-  // Default case
+  // Cas par défaut
   return fallbackMessage;
 };
 
 /**
- * Determines if an error should be displayed to the user
- * Some errors are expected and shouldn't interrupt the user experience
- * @param {Error|Object|string} error - The error to evaluate
- * @returns {boolean} True if error should be shown to user
+ * Détermine si une erreur doit être affichée à l'utilisateur
+ * Certaines erreurs sont attendues et ne devraient pas interrompre l'expérience utilisateur
+ * @param {Error|Object|string} error - L'erreur à évaluer
+ * @returns {boolean} Vrai si l'erreur doit être montrée à l'utilisateur
  */
-export const shouldDisplayError = (error) => {
-  // Network errors should be shown
-  if (error?.message?.includes('Network Error')) return true;
-  
-  // Server unavailable errors should be shown
-  if (error?.message?.includes('Server unavailable')) return true;
-  
-  // For API errors, check status code
+export const shouldDisplayError = (error) => {  // Les erreurs réseau doivent être affichées
+  if (error?.message?.includes('Erreur réseau')) return true;
+    // Les erreurs de serveur indisponible doivent être affichées
+  if (error?.message?.includes('Serveur indisponible')) return true;
+    // Pour les erreurs API, vérifier le code de statut
   const status = error?.response?.status || error?.status;
   
-  // 4xx errors often need user attention
+  // Les erreurs 4xx nécessitent souvent l'attention de l'utilisateur
   if (status >= 400 && status < 500) return true;
   
-  // 500 errors should notify the user
+  // Les erreurs 500 doivent être notifiées à l'utilisateur
   if (status >= 500) return true;
   
-  // For unknown error types, default to showing them
+  // Pour les types d'erreurs inconnus, les afficher par défaut
   return true;
 };
 
 /**
- * Handles an error with consistent logging and returns user-friendly message
- * @param {Error|Object|string} error - The error to handle
- * @param {string} context - The component or function context
- * @param {string} fallbackMessage - Default user message
- * @returns {string} User-friendly error message
+ * Gère une erreur avec une journalisation cohérente et renvoie un message convivial
+ * @param {Error|Object|string} error - L'erreur à gérer
+ * @param {string} context - Le contexte du composant ou de la fonction
+ * @param {string} fallbackMessage - Message utilisateur par défaut
+ * @returns {string} Message d'erreur convivial pour l'utilisateur
  */
 export const handleError = (error, context, fallbackMessage) => {
   logError(error, context);

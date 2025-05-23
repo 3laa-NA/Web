@@ -12,6 +12,7 @@ const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRoutes');
 const messageRoutes = require('./messageRoutes');
 const privateMessageRoutes = require('./privateMessageRoutes');
+const forumRoutes = require('./forumRoutes');
 const adminRoutes = require('./adminRoutes');
 const systemRoutes = require('./systemRoutes');
 
@@ -21,6 +22,7 @@ router.use('/auth', authRoutes);           // Routes d'authentification (/api/au
 router.use('/user', userRoutes);           // Routes utilisateur (/api/user/*)
 router.use('/messages', messageRoutes);    // Routes messages publics (/api/messages/*)
 router.use('/private-messages', privateMessageRoutes); // Routes messages privés (/api/private-messages/*)
+router.use('/forums', forumRoutes);        // Routes forums (/api/forums/*)
 router.use('/admin', adminRoutes);         // Routes d'administration (/api/admin/*)
 
 module.exports = router;
