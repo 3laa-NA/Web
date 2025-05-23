@@ -14,6 +14,8 @@ function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -95,8 +97,19 @@ function Register() {
       setError(err.message || t('errors.registrationFailed', { ns: 'auth', defaultValue: 'Registration failed' }));
     } finally {
       setIsSubmitting(false);
-    }  }  
-    if (success) {
+    }
+  }
+  
+  // Fonctions pour basculer l'affichage des mots de passe
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+    
+  if (success) {
     return (
       <div className="auth-form success-message">
         <h2>{t('success.registrationSuccess', { ns: 'auth', defaultValue: 'Registration Successful' })}</h2>
@@ -173,29 +186,49 @@ function Register() {
 
         <div className="form-group">
           <label htmlFor="password">{t('password')}</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={values.password}
-            onChange={handleChange}
-            className={errors.password ? 'error' : ''}
-            disabled={isSubmitting}
-          />
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={values.password}
+              onChange={handleChange}
+              className={errors.password ? 'error' : ''}
+              disabled={isSubmitting}
+            />
+            <button 
+              type="button" 
+              className="toggle-password-btn"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? t('hidePassword', { defaultValue: 'Cacher le mot de passe' }) : t('showPassword', { defaultValue: 'Afficher le mot de passe' })}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
           {errors.password && <div className="error-text">{errors.password}</div>}
         </div>
 
         <div className="form-group">
           <label htmlFor="confirmPassword">{t('confirmPassword')}</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={values.confirmPassword}
-            onChange={handleChange}
-            className={errors.confirmPassword ? 'error' : ''}
-            disabled={isSubmitting}
-          />
+          <div className="password-input-container">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={values.confirmPassword}
+              onChange={handleChange}
+              className={errors.confirmPassword ? 'error' : ''}
+              disabled={isSubmitting}
+            />
+            <button 
+              type="button" 
+              className="toggle-password-btn"
+              onClick={toggleConfirmPasswordVisibility}
+              aria-label={showConfirmPassword ? t('hidePassword', { defaultValue: 'Cacher le mot de passe' }) : t('showPassword', { defaultValue: 'Afficher le mot de passe' })}
+            >
+              {showConfirmPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
           {errors.confirmPassword && <div className="error-text">{errors.confirmPassword}</div>}
         </div>
         

@@ -13,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState(API.connectionState.CHECKING);
+  const [showPassword, setShowPassword] = useState(false); // État pour afficher/masquer le mot de passe
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -111,6 +112,12 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // Fonction pour basculer l'affichage du mot de passe
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   // Afficher un message d'état de connexion si hors-ligne
   const renderConnectionStatus = () => {
     if (connectionStatus === API.connectionState.CHECKING) {
@@ -153,17 +160,27 @@ const Login = () => {
           />
         </div>
         
-        <div className="form-group">
+        <div className="form-group password-group">
           <label htmlFor="password">{t('password')}</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={credentials.password}
-            onChange={handleChange}
-            disabled={loading}
-            required
-          />
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              disabled={loading}
+              required
+            />
+            <button 
+              type="button" 
+              className="toggle-password-btn"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? t('hidePassword', { defaultValue: 'Cacher le mot de passe' }) : t('showPassword', { defaultValue: 'Afficher le mot de passe' })}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
         </div>
         
         <div className="auth-actions">
